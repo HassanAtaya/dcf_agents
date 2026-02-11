@@ -75,7 +75,7 @@ const TRANSLATIONS: Record<Lang, Record<string, string>> = {
     'users.confirm_delete': 'Delete user',
     // Settings
     'settings.title': 'Settings',
-    'settings.api_key': 'API Key',
+    'settings.api_key': 'OpenAI API Key',
     'settings.agent1': 'Agent 1 - Company Existence Validation',
     'settings.agent2': 'Agent 2 - DCF Input Data Collection',
     'settings.agent3': 'Agent 3 - DCF Calculation',
@@ -189,7 +189,7 @@ const TRANSLATIONS: Record<Lang, Record<string, string>> = {
     'users.deleted': 'Utilisateur supprim\u00E9',
     'users.confirm_delete': "Supprimer l'utilisateur",
     'settings.title': 'Param\u00E8tres',
-    'settings.api_key': 'Cl\u00E9 API',
+    'settings.api_key': 'OpenAI  Cl\u00E9 API',
     'settings.agent1': 'Agent 1 - Validation existence entreprise',
     'settings.agent2': 'Agent 2 - Collecte donn\u00E9es DCF',
     'settings.agent3': 'Agent 3 - Calcul DCF',

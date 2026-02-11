@@ -128,11 +128,22 @@ export class DcfComponent implements OnDestroy {
     a.click();
     document.body.removeChild(a);
 
-    // Log the download to KPI
-    const lastAgent = this.status?.agent_results?.slice(-1)[0];
-    const description = lastAgent ? lastAgent.result.substring(0, 500) : '';
-    const validationStatus = this.status?.agent_results?.find(r => r.agent === 4)?.result?.includes('Validated')
-      ? 'Validated' : 'Adjusted & Validated';
+    // Log the download to KPI — build a short summary (max ~50 words)
+    const agent1 = this.status?.agent_results?.find(r => r.agent === 1)?.result || '';
+    const agent4 = this.status?.agent_results?.find(r => r.agent === 4)?.result || '';
+
+    // Extract key facts from agent1 for a brief description
+    const lines = agent1.split('\n').filter(l => l.trim().length > 0);
+    const snippet = lines.slice(0, 3).join(' ').replace(/[#*|_\-]+/g, ' ').replace(/\s+/g, ' ').trim();
+    const words = snippet.split(' ').slice(0, 45).join(' ');
+    const description = words + (snippet.split(' ').length > 45 ? '...' : '');
+
+    const validationStatus = agent4.toLowerCase().includes('rejected')
+      ? 'Rejected'
+      : agent4.toLowerCase().includes('adjusted')
+        ? 'Adjusted & Validated'
+        : 'Validated';
+
     this.api.createDcfLog({
       username: this.auth.user?.username || 'unknown',
       companyName: this.companyName,
