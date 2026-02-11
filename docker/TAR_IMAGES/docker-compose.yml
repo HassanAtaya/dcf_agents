@@ -1,4 +1,4 @@
-﻿name: docker
+name: docker
 services:
   mysql_db:
     image: docker-mysql_db:latest
@@ -39,6 +39,8 @@ services:
       - "14200:4200"
     depends_on:
       java_app:
+        condition: service_started
+      python_app:
         condition: service_started
 
   python_app:

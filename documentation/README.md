@@ -1,5 +1,23 @@
-﻿APPLICATION WORKFLOW OVERVIEW
-=============================
+DCF PRODUCTION - APPLICATION WORKFLOW OVERVIEW
+===============================================
+
+ABOUT THE PROJECT
+-----------------
+DCF Production is a full-stack financial analysis tool that performs
+Discounted Cash Flow (DCF) valuations using AI-powered agents.
+The application orchestrates four sequential CrewAI agents (powered by OpenAI)
+to verify a company, collect financial data, build a 10-year DCF model,
+and validate the results. The output is a downloadable ZIP archive
+containing a professional Word document report and a single-sheet Excel
+forecast file.
+
+Technology stack:
+- Frontend:  Angular 17 + PrimeNG (standalone components, lazy routing)
+- Backend:   Java 21 / Spring Boot 3.2.0 (REST API, Spring Security, Flyway)
+- AI Service: Python 3.11 / Flask + CrewAI (multi-agent pipeline)
+- Database:  MySQL 8.0 (schema: dcf_ai)
+- Docker:    Docker Compose v2, Nginx Alpine
+
 
 LOGIN
 -----
@@ -65,39 +83,55 @@ DCF ANALYSIS
 1. Open DCF from the left sidebar.
 2. Enter a company name (e.g., "CACC - Credit Acceptance Corporation").
 3. Click "GO" to start the analysis.
-4. The system runs 4 AI agents sequentially:
-   - Agent 1: Verifies the company exists.
-   - Agent 2: Collects financial data for DCF inputs.
-   - Agent 3: Builds a 10-year DCF model with scenarios.
-   - Agent 4: Validates and audits the entire analysis.
-5. Progress is shown in real-time with status indicators.
-6. If any agent fails, the process stops and shows the error.
-7. On success, click "Download Excel Report" to get the DCF analysis.
-8. The Excel file contains 5 sheets:
-   - Company Summary
-   - Input Data
-   - Forecast Model
-   - Valuation Summary
-   - Validation Notes
+4. The system runs 4 AI agents sequentially via CrewAI:
+   - Agent 1: Verifies the company exists via authoritative sources.
+   - Agent 2: Collects historical financials, balance sheet, WACC components, etc.
+   - Agent 3: Builds a 10-year DCF model with base/conservative/optimistic scenarios.
+   - Agent 4: Validates and audits the entire analysis for realism.
+5. Progress is shown in real-time with status indicators for each agent.
+6. If any agent fails, the process stops and shows the error message.
+7. On success, click "Download Report" to get a ZIP archive containing:
+   - valuation_report.docx  : A professionally structured Word document explaining
+     the valuation results, key assumptions, sensitivity analysis, and risk notes.
+   - dcf_10_year_forecast.xlsx : A single-sheet Excel file with the full 10-year
+     DCF forecast model, terminal value, enterprise value, and intrinsic value per share.
+8. The ZIP filename follows the pattern: companyname_valuation_YYYYMMDD.zip
+
+
+KPI DASHBOARD
+-------------
+1. Open KPI Dashboard from the left sidebar.
+2. Every successful DCF report download is automatically logged with:
+   - Date of analysis
+   - Username who performed the analysis
+   - Company name analyzed
+   - Brief description (concise summary from AI results, max ~50 words)
+   - Validation status (Validated / Adjusted & Validated / Rejected)
+3. The dashboard displays:
+   - Summary cards: Total Analyses, Validated count, Unique Companies
+   - Charts: Status Breakdown (donut), Monthly Analyses (bar), Top Companies (donut)
+   - Detailed logs table with pagination
+4. Click "View More" on any row to see the full description in a dialog.
 
 
 MENU VISIBILITY VS PERMISSIONS
 ------------------------------
 Sidebar menu items are shown only if the user has at least one related permission:
 
-- Permissions: add_permission, edit_permission, delete_permission
-- Roles:       add_role, edit_role, delete_role
-- Users:       add_user, edit_user, delete_user
-- Settings:    edit_settings
-- DCF:         use_dcf
+- Permissions:    add_permission, edit_permission, delete_permission
+- Roles:          add_role, edit_role, delete_role
+- Users:          add_user, edit_user, delete_user
+- Settings:       edit_settings
+- DCF:            use_dcf
+- KPI Dashboard:  view_kpi
 
 
 MULTI-LANGUAGE SUPPORT
 ----------------------
 The application supports three languages:
 - English (default)
-- French (FranÃ§ais)
-- Arabic (Ø§Ù„Ø¹Ø±Ø¨ÙŠØ©) - with full RTL layout support
+- French (Francais)
+- Arabic - with full RTL layout support
 
 Users can change their language in the Profile page. The language preference
 is saved to the database and applied automatically on login.
@@ -105,9 +139,10 @@ is saved to the database and applied automatically on login.
 
 SUMMARY
 -------
-A new admin workflow is:
-- Log in with default credentials.
-- Update profile and language preference.
-- Configure AI settings (API key and agent prompts).
-- Manage permissions, roles, and users.
-- Run DCF analysis and download Excel reports.
+A typical admin workflow is:
+1. Log in with default credentials (admin / 123456).
+2. Update profile and language preference.
+3. Configure AI settings (OpenAI API key and four agent prompts).
+4. Manage permissions, roles, and users as needed.
+5. Run DCF analysis and download the ZIP report (Word + Excel).
+6. Review analysis history on the KPI Dashboard.
