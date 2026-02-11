@@ -1,0 +1,45 @@
+<div class="page-container">
+  <h2><i class="pi pi-cog"></i> {{ ts.t('settings.title') }}</h2>
+
+  <div class="settings-card" *ngIf="settings">
+    <div class="settings-section">
+      <div class="field">
+        <label>{{ ts.t('settings.api_key') }}</label>
+        <input type="password" pInputText [(ngModel)]="apiKey" [placeholder]="ts.t('settings.enter_key')" />
+      </div>
+    </div>
+
+    <div class="settings-section">
+      <div class="field">
+        <label>{{ ts.t('settings.agent1') }}</label>
+        <textarea pInputTextarea [(ngModel)]="promptAgent1" [rows]="5" class="prompt-area"></textarea>
+      </div>
+    </div>
+
+    <div class="settings-section">
+      <div class="field">
+        <label>{{ ts.t('settings.agent2') }}</label>
+        <textarea pInputTextarea [(ngModel)]="promptAgent2" [rows]="5" class="prompt-area"></textarea>
+      </div>
+    </div>
+
+    <div class="settings-section">
+      <div class="field">
+        <label>{{ ts.t('settings.agent3') }}</label>
+        <textarea pInputTextarea [(ngModel)]="promptAgent3" [rows]="5" class="prompt-area"></textarea>
+      </div>
+    </div>
+
+    <div class="settings-section">
+      <div class="field">
+        <label>{{ ts.t('settings.agent4') }}</label>
+        <textarea pInputTextarea [(ngModel)]="promptAgent4" [rows]="5" class="prompt-area"></textarea>
+      </div>
+    </div>
+
+    <div class="actions">
+      <button pButton [label]="ts.t('settings.save')" icon="pi pi-check" (click)="save()"
+              [loading]="loading" *ngIf="auth.hasPermission('edit_settings')"></button>
+    </div>
+  </div>
+</div>

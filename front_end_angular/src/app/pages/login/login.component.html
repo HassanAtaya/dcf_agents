@@ -1,0 +1,26 @@
+<div class="login-page">
+  <div class="login-card">
+    <div class="login-header">
+      <img src="logo.png" alt="Logo" class="login-logo" />
+      <h2>{{ ts.t('login.title') }}</h2>
+      <p>{{ ts.t('login.subtitle') }}</p>
+    </div>
+
+    <div class="login-form">
+      <div class="field">
+        <label for="username">{{ ts.t('login.username') }}</label>
+        <input #usernameInput id="username" type="text" pInputText [(ngModel)]="username"
+               [placeholder]="ts.t('login.enter_username')" (keyup.enter)="onLogin()" [disabled]="loading" />
+      </div>
+
+      <div class="field">
+        <label for="password">{{ ts.t('login.password') }}</label>
+        <input id="password" type="password" pInputText [(ngModel)]="password"
+               [placeholder]="ts.t('login.enter_password')" (keyup.enter)="onLogin()" [disabled]="loading" />
+      </div>
+
+      <button pButton [label]="ts.t('login.signin')" icon="pi pi-sign-in"
+              (click)="onLogin()" [loading]="loading" class="login-btn"></button>
+    </div>
+  </div>
+</div>

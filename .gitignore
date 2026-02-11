@@ -1,0 +1,62 @@
+# ===============================
+# Java / Spring Boot
+# ===============================
+target/
+*.class
+*.jar
+*.war
+*.ear
+*.nar
+hs_err_pid*
+
+# Maven
+.mvn/wrapper/maven-wrapper.jar
+.mvn/wrapper/maven-wrapper.properties
+dependency-reduced-pom.xml
+
+# Gradle
+.gradle/
+build/
+
+# ===============================
+# Angular / Node
+# ===============================
+node_modules/
+dist/
+.angular/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+coverage/
+
+# ===============================
+# Python
+# ===============================
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+.env
+.env.*
+venv/
+.venv/
+env/
+ENV/
+pip-log.txt
+pip-delete-this-directory.txt
+
+# ===============================
+# Docker
+# ===============================
+*.tar
+*.tar.gz
+*.tgz
+
+# ===============================
+# Build / Runtime Artifacts
+# ===============================
+out/
+logs/
+tmp/

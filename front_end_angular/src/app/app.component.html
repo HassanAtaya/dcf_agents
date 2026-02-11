@@ -1,0 +1,24 @@
+<p-toast position="top-right"></p-toast>
+<p-confirmDialog></p-confirmDialog>
+
+<!-- Global loader overlay -->
+<div class="loader-overlay" *ngIf="loader.loading$ | async">
+  <div class="loader-spinner">
+    <i class="pi pi-spin pi-spinner"></i>
+  </div>
+</div>
+
+<div class="app-shell" *ngIf="showLayout; else loginOnly">
+  <app-header />
+  <div class="app-body">
+    <app-sidebar />
+    <main class="app-content">
+      <router-outlet />
+    </main>
+  </div>
+  <app-footer />
+</div>
+
+<ng-template #loginOnly>
+  <router-outlet />
+</ng-template>

@@ -1,0 +1,62 @@
+﻿name: docker
+services:
+  mysql_db:
+    build:
+      context: ${PROJECT_PATH}/docker/mysql
+      dockerfile: Dockerfile
+    container_name: mysql_db
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: dcf_ai
+    ports:
+      - "33306:3306"
+    volumes:
+      - docker_mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -uroot -p$${MYSQL_ROOT_PASSWORD}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  java_app:
+    build:
+      context: ${PROJECT_PATH}
+      dockerfile: docker/java/Dockerfile
+    container_name: java_app
+    depends_on:
+      mysql_db:
+        condition: service_healthy
+    ports:
+      - "18080:8080"
+    environment:
+      MYSQL_HOST: mysql_db
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql_db:3306/dcf_ai
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: root
+      SPRING_FLYWAY_URL: jdbc:mysql://mysql_db:3306/dcf_ai
+
+  angular_app:
+    build:
+      context: ${PROJECT_PATH}
+      dockerfile: docker/angular/Dockerfile
+    container_name: angular_app
+    ports:
+      - "14200:4200"
+    depends_on:
+      java_app:
+        condition: service_started
+
+  python_app:
+    build:
+      context: ${PROJECT_PATH}
+      dockerfile: docker/python/Dockerfile
+    container_name: python_app
+    ports:
+      - "15000:5000"
+    depends_on:
+      java_app:
+        condition: service_started
+
+volumes:
+  docker_mysql_data:

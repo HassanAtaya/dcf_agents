@@ -1,0 +1,66 @@
+.loader-overlay {
+  position: fixed;
+  top: 0;
+  right: 0;
+  z-index: 99999;
+  padding: 0.75rem 1rem;
+  pointer-events: none; // don't block UI interactions
+}
+
+.loader-spinner {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+
+  i {
+    font-size: 1.4rem;
+    color: var(--color-primary);
+  }
+}
+
+.app-shell {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.app-body {
+  display: flex;
+  flex: 1;
+  margin-top: 60px; // header height
+}
+
+.app-content {
+  flex: 1;
+  padding: 1.5rem;
+  overflow-y: auto;
+  background: var(--color-background);
+  min-height: calc(100vh - 60px - 40px); // minus header and footer
+}
+
+// RTL support
+:host-context([dir="rtl"]) {
+  .app-body {
+    flex-direction: row-reverse;
+  }
+}
+
+@media (max-width: 768px) {
+  .app-body {
+    margin-left: 60px; // keep content clear of fixed sidebar
+  }
+
+  :host-context([dir="rtl"]) .app-body {
+    margin-left: 0;
+    margin-right: 60px;
+  }
+
+  .app-content {
+    padding: 0.75rem;
+  }
+}

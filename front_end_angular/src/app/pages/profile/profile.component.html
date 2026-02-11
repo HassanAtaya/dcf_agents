@@ -1,0 +1,30 @@
+<div class="profile-page">
+  <div class="profile-card">
+    <h2><i class="pi pi-user"></i> {{ ts.t('profile.title') }}</h2>
+
+    <div class="form-grid">
+      <div class="field">
+        <label>{{ ts.t('profile.firstname') }}</label>
+        <input #firstnameInput type="text" pInputText [(ngModel)]="firstname" [placeholder]="ts.t('profile.firstname')" />
+      </div>
+      <div class="field">
+        <label>{{ ts.t('profile.lastname') }}</label>
+        <input type="text" pInputText [(ngModel)]="lastname" [placeholder]="ts.t('profile.lastname')" />
+      </div>
+      <div class="field">
+        <label>{{ ts.t('profile.password') }}</label>
+        <input type="password" pInputText [(ngModel)]="password" [placeholder]="ts.t('profile.password_hint')" />
+      </div>
+      <div class="field">
+        <label>{{ ts.t('profile.language') }}</label>
+        <p-dropdown [options]="languages" [(ngModel)]="language"
+                    optionLabel="label" optionValue="value"
+                    [style]="{ width: '100%' }"></p-dropdown>
+      </div>
+    </div>
+
+    <div class="actions">
+      <button pButton [label]="ts.t('profile.save')" icon="pi pi-check" (click)="save()" [loading]="loading"></button>
+    </div>
+  </div>
+</div>

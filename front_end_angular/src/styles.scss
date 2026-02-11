@@ -1,0 +1,308 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+:root {
+  --color-primary: #667eea;
+  --color-primary-dark: #5a67d8;
+  --color-secondary: #718096;
+  --color-accent: #fa709a;
+  --color-success: #48bb78;
+  --color-danger: #f56565;
+  --color-warning: #ed8936;
+  --color-background: #f7fafc;
+  --color-surface: #ffffff;
+  --color-surface-hover: #f0f1f6;
+  --color-border-subtle: #e2e8f0;
+  --color-on-primary: #ffffff;
+  --color-on-surface: #2d3748;
+  --color-on-surface-muted: #718096;
+  --color-text-light: #a0aec0;
+  --color-popup-back: #f0f2f5;
+  --color-header-bg: #667eea;
+  --color-sidebar-bg: #2d3748;
+  --font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-size-base: 14px;
+}
+
+* { box-sizing: border-box; }
+
+html {
+  background-color: #f7fafc;
+  background-color: var(--color-background);
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  font-family: var(--font-family);
+  font-size: var(--font-size-base);
+  background-color: var(--color-background);
+  color: var(--color-on-surface);
+  -webkit-font-smoothing: antialiased;
+  scrollbar-color: var(--color-primary) var(--color-background); /* Firefox */
+}
+
+html, body, .p-component {
+  font-family: var(--font-family) !important;
+  font-size: var(--font-size-base) !important;
+}
+
+h1, h2, h3, h4, h5, h6 { margin: 0; font-weight: 600; }
+a { text-decoration: none; color: inherit; }
+button { font-family: inherit; }
+
+/* Scrollbar styling - Chrome/Edge/Safari */
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: var(--color-background) !important; }
+::-webkit-scrollbar-thumb { background: var(--color-primary); border-radius: 4px; }
+::-webkit-scrollbar-corner { background: var(--color-background); }
+
+/* ======= Global PrimeNG Button ======= */
+button.p-button, .p-button {
+  border-radius: 10px !important;
+  font-weight: 600 !important;
+  transition: all 0.3s ease !important;
+  cursor: pointer !important;
+  padding: 0.65rem 1.3rem !important;
+  background: var(--color-primary) !important;
+  border-color: var(--color-primary) !important;
+  color: white !important;
+}
+button.p-button:not(:disabled):hover, .p-button:not(:disabled):hover {
+  background: var(--color-primary-dark) !important;
+  border-color: var(--color-primary-dark) !important;
+}
+.p-button-success { background: var(--color-success) !important; border-color: var(--color-success) !important; }
+.p-button-danger { background: var(--color-danger) !important; border-color: var(--color-danger) !important; }
+.p-button-warning { background: var(--color-warning) !important; border-color: var(--color-warning) !important; }
+.p-button-text {
+  background: transparent !important; border-color: transparent !important; color: var(--color-on-surface) !important;
+}
+.p-button-text:hover:not(:disabled) {
+  background: var(--color-surface-hover) !important; color: var(--color-primary) !important;
+}
+.p-button-icon-only { padding: 0.65rem !important; min-width: auto !important; }
+
+/* ======= Global Input ======= */
+input[type="text"], input[type="email"], input[type="password"], input[type="number"],
+input[type="tel"], input[type="url"], input[type="search"],
+input.p-inputtext, .p-inputtext, textarea.p-inputtextarea {
+  background-color: #f5f5f5 !important;
+  border-radius: 8px !important;
+  padding: 0.7rem 1rem !important;
+  border: 1px solid #d0d0d0 !important;
+  font-size: var(--font-size-base) !important;
+  transition: all 0.3s ease !important;
+}
+input:focus, .p-inputtext:focus, textarea:focus {
+  background-color: #fff !important;
+  border-color: var(--color-primary) !important;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1) !important;
+  outline: none !important;
+}
+
+/* ======= Global Dropdown ======= */
+.p-dropdown {
+  background: #f5f5f5 !important;
+  border: 1px solid #d0d0d0 !important;
+  border-radius: 8px !important;
+  min-height: 42px;
+}
+.p-dropdown-panel { border-radius: 10px !important; box-shadow: 0 8px 20px rgba(0,0,0,.12) !important; }
+.p-dropdown-panel .p-dropdown-item.p-highlight { background: var(--color-primary) !important; color: white !important; }
+
+/* ======= Global MultiSelect ======= */
+.p-multiselect {
+  background: #f5f5f5 !important; border: 1px solid #d0d0d0 !important; border-radius: 8px !important;
+}
+.p-multiselect-panel .p-multiselect-item.p-highlight { background: var(--color-primary) !important; color: white !important; }
+
+/* ======= Global Dialog ======= */
+.p-dialog-mask { background-color: rgba(0,0,0,0.4) !important; backdrop-filter: blur(3px); }
+.p-dialog { border-radius: 16px !important; box-shadow: 0 20px 40px rgba(0,0,0,.15) !important; overflow: hidden; }
+.p-dialog-header {
+  padding: 1.25rem 1.5rem !important; border-bottom: 1px solid var(--color-border-subtle) !important;
+  background: var(--color-popup-back) !important;
+}
+.p-dialog-header .p-dialog-title { font-weight: 700 !important; font-size: 1.1rem !important; }
+.p-dialog-content { padding: 1.5rem !important; background: white !important; }
+.p-dialog-footer {
+  padding: 1rem 1.5rem !important; background: var(--color-popup-back) !important;
+  border-top: 1px solid var(--color-border-subtle) !important;
+  display: flex !important; justify-content: flex-end !important; gap: 0.5rem !important;
+}
+
+/* ======= Global Table ======= */
+.p-datatable .p-datatable-thead > tr > th {
+  background: var(--color-primary) !important;
+  color: white !important;
+  font-weight: 600 !important;
+  padding: 0.75rem 1rem !important;
+  border-bottom: 1px solid var(--color-border-subtle) !important;
+  font-size: var(--font-size-base) !important;
+}
+.p-datatable .p-datatable-tbody > tr { transition: all 0.2s !important; }
+.p-datatable .p-datatable-tbody > tr:hover { background: var(--color-surface-hover) !important; }
+.p-datatable .p-datatable-tbody > tr > td {
+  padding: 0.6rem 1rem !important; border-color: #edf2f7 !important;
+  font-size: var(--font-size-base) !important;
+}
+
+/* ======= Paginator ======= */
+.p-paginator {
+  background: var(--color-surface) !important; border-radius: 8px !important;
+  padding: 0.5rem !important; margin-top: 0.5rem !important; border: 1px solid var(--color-border-subtle) !important;
+}
+.p-paginator .p-paginator-pages .p-paginator-page { border-radius: 8px !important; cursor: pointer !important; }
+.p-paginator .p-paginator-pages .p-paginator-page.p-highlight {
+  background: var(--color-primary) !important; color: white !important;
+}
+
+/* ======= Toast ======= */
+.p-toast { z-index: 9999 !important; }
+.p-toast-top-right { top: 70px !important; right: 20px !important; }
+.p-toast-message { border-radius: 10px !important; }
+.p-toast-message-error { background: var(--color-danger) !important; }
+.p-toast-message-error .p-toast-message-icon, .p-toast-message-error .p-toast-icon-close,
+.p-toast-message-error .p-toast-summary, .p-toast-message-error .p-toast-detail { color: white !important; }
+.p-toast-message-success { background: var(--color-success) !important; }
+.p-toast-message-success .p-toast-message-icon, .p-toast-message-success .p-toast-icon-close,
+.p-toast-message-success .p-toast-summary, .p-toast-message-success .p-toast-detail { color: white !important; }
+
+/* ======= Confirm Dialog ======= */
+.p-confirm-dialog .p-dialog-content { padding: 1.5rem !important; }
+.p-confirm-dialog .p-confirm-dialog-message { margin-left: 1rem !important; }
+.p-confirm-dialog .p-confirm-dialog-accept {
+  background: var(--color-danger) !important;
+  border-color: var(--color-danger) !important;
+  color: white !important;
+}
+.p-confirm-dialog .p-confirm-dialog-accept:hover {
+  background: #e53e3e !important;
+  border-color: #e53e3e !important;
+}
+
+/* ======= Password mask ======= */
+.password-mask { font-family: monospace; letter-spacing: 2px; }
+
+/* ======= RTL Support ======= */
+[dir="rtl"] {
+  .app-header {
+    .header-left { flex-direction: row-reverse; }
+    .header-right { flex-direction: row-reverse; }
+  }
+
+  .sidebar {
+    border-left: none;
+    border-right: none;
+  }
+
+  .sidebar-item {
+    flex-direction: row-reverse;
+    text-align: right;
+  }
+
+  .agent-card {
+    border-left: none !important;
+    border-right: 4px solid #e2e8f0;
+
+    &.agent-running { border-right-color: var(--color-primary); }
+    &.agent-complete { border-right-color: var(--color-success); }
+    &.agent-error { border-right-color: var(--color-danger); }
+  }
+
+  .page-header {
+    flex-direction: row-reverse;
+  }
+
+  .action-buttons {
+    flex-direction: row-reverse;
+  }
+
+  .dialog-form .field {
+    text-align: right;
+  }
+
+  .form-grid {
+    direction: rtl;
+  }
+
+  .actions {
+    justify-content: flex-start;
+  }
+
+  .p-dialog-footer {
+    justify-content: flex-start !important;
+  }
+
+  .p-confirm-dialog .p-confirm-dialog-message {
+    margin-left: 0 !important;
+    margin-right: 1rem !important;
+  }
+
+  .p-toast-top-right {
+    right: auto !important;
+    left: 20px !important;
+  }
+}
+
+/* ======= Responsive layout ======= */
+@media (max-width: 1024px) {
+  :root {
+    --font-size-base: 13px;
+  }
+
+  .p-datatable .p-datatable-thead > tr > th,
+  .p-datatable .p-datatable-tbody > tr > td {
+    padding: 0.5rem 0.5rem !important;
+  }
+
+  .page-header h2 {
+    font-size: 1.1rem;
+  }
+}
+
+@media (max-width: 768px) {
+  :root {
+    --font-size-base: 12px;
+  }
+
+  .page-container {
+    padding: 0.75rem !important;
+  }
+
+  .page-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+
+  .page-header h2 {
+    font-size: 1rem;
+  }
+
+  /* Make PrimeNG tables scroll horizontally on small screens */
+  .p-datatable-wrapper {
+    overflow-x: auto;
+  }
+
+  .p-datatable {
+    min-width: 700px;
+  }
+
+  /* Dialogs: use full width on phones with some margin */
+  .p-dialog {
+    width: 95% !important;
+    max-width: 600px;
+    margin: 0 auto !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .p-button {
+    padding: 0.5rem 0.9rem !important;
+  }
+
+  .p-inputtext, input.p-inputtext, textarea.p-inputtextarea {
+    padding: 0.55rem 0.75rem !important;
+  }
+}

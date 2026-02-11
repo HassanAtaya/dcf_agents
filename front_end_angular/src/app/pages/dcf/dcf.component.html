@@ -1,0 +1,100 @@
+<div class="page-container">
+  <h2><i class="pi pi-chart-line"></i> {{ ts.t('dcf.title') }}</h2>
+
+  <!-- Input Section -->
+  <div class="dcf-input-section">
+    <div class="input-row">
+      <div class="field company-field">
+        <label>{{ ts.t('dcf.company_name') }}</label>
+        <input type="text" pInputText [(ngModel)]="companyName"
+               [placeholder]="ts.t('dcf.company_placeholder')"
+               [disabled]="isRunning"
+               (keyup.enter)="startDcf()" />
+      </div>
+      <button pButton [label]="ts.t('dcf.go')" icon="pi pi-play"
+              (click)="startDcf()" [loading]="isRunning"
+              class="go-btn"></button>
+    </div>
+  </div>
+
+  <!-- Status Section -->
+  <div class="dcf-status-section" *ngIf="status || isRunning">
+
+    <!-- Running indicator -->
+    <div class="running-banner" *ngIf="isRunning">
+      <i class="pi pi-spin pi-spinner"></i>
+      <span>{{ ts.t('dcf.running') }}</span>
+    </div>
+
+    <!-- Agent Progress -->
+    <div class="agents-timeline">
+      <div *ngFor="let agentName of agentNames; let i = index"
+           class="agent-card"
+           [class.agent-running]="getAgentStatus(i + 1) === 'running'"
+           [class.agent-complete]="getAgentStatus(i + 1) === 'complete'"
+           [class.agent-error]="getAgentStatus(i + 1) === 'error'"
+           [class.agent-pending]="getAgentStatus(i + 1) === 'pending'">
+
+        <div class="agent-header" (click)="toggleAgent(i + 1)">
+          <div class="agent-indicator">
+            <i *ngIf="getAgentStatus(i + 1) === 'pending'" class="pi pi-circle"></i>
+            <i *ngIf="getAgentStatus(i + 1) === 'running'" class="pi pi-spin pi-spinner"></i>
+            <i *ngIf="getAgentStatus(i + 1) === 'complete'" class="pi pi-check-circle"></i>
+            <i *ngIf="getAgentStatus(i + 1) === 'error'" class="pi pi-times-circle"></i>
+          </div>
+          <div class="agent-info">
+            <span class="agent-number">Agent {{ i + 1 }}</span>
+            <span class="agent-name">{{ agentName }}</span>
+          </div>
+          <i class="expand-icon" [class]="isExpanded(i + 1) ? 'pi pi-chevron-up' : 'pi pi-chevron-down'"
+             *ngIf="getAgentResult(i + 1)"></i>
+        </div>
+
+        <div class="agent-result" *ngIf="isExpanded(i + 1) && getAgentResult(i + 1)">
+          <pre>{{ getAgentResult(i + 1)?.result }}</pre>
+        </div>
+      </div>
+
+      <!-- Generating Report step -->
+      <div class="agent-card"
+           [class.agent-running]="status!.current_agent === 0 && status!.status === 'running'"
+           [class.agent-complete]="status!.download_ready"
+           *ngIf="status && status.agent_results.length >= 4">
+        <div class="agent-header">
+          <div class="agent-indicator">
+            <i *ngIf="!status.download_ready" class="pi pi-spin pi-spinner"></i>
+            <i *ngIf="status.download_ready" class="pi pi-check-circle"></i>
+          </div>
+          <div class="agent-info">
+            <span class="agent-number">Final</span>
+            <span class="agent-name">{{ ts.t('dcf.generating_report') }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Error Display -->
+    <div class="error-banner" *ngIf="status?.status === 'error'">
+      <i class="pi pi-exclamation-triangle"></i>
+      <span>{{ status?.error }}</span>
+    </div>
+
+    <!-- Complete / Download -->
+    <div class="complete-section" *ngIf="status?.status === 'complete' && status?.download_ready">
+      <div class="complete-banner">
+        <i class="pi pi-check-circle"></i>
+        <span>{{ ts.t('dcf.complete') }}</span>
+      </div>
+      <button pButton [label]="ts.t('dcf.download')" icon="pi pi-download"
+              (click)="downloadReport()" class="download-btn"></button>
+    </div>
+  </div>
+
+  <!-- Idle state -->
+  <div class="idle-section" *ngIf="!status && !isRunning">
+    <div class="idle-message">
+      <i class="pi pi-info-circle"></i>
+      <p>{{ ts.t('dcf.idle') }}</p>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,60 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "dcf: Java Backend",
+      "type": "shell",
+      "command": "$env:JAVA_HOME = 'C:\\Program Files\\Java\\jdk-21'; $env:SPRING_CONFIG_LOCATION = 'classpath:/LOCALapplication.properties'; mvn spring-boot:run",
+      "options": {
+        "cwd": "${workspaceFolder}/back_end_javaspringboot"
+      },
+      "isBackground": true,
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated"
+      }
+    },
+    {
+      "label": "dcf: Angular Frontend",
+      "type": "shell",
+      "command": "npx ng serve --port 4200",
+      "options": {
+        "cwd": "${workspaceFolder}/front_end_angular"
+      },
+      "isBackground": true,
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated"
+      }
+    },
+    {
+      "label": "dcf: Python AI",
+      "type": "shell",
+      "command": "python main.py",
+      "options": {
+        "cwd": "${workspaceFolder}/ai_python"
+      },
+      "isBackground": true,
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated"
+      }
+    },
+    {
+      "label": "dcf: [Ctrl+Alt+8] Run All Apps",
+      "dependsOn": [
+        "dcf: Java Backend",
+        "dcf: Angular Frontend",
+        "dcf: Python AI"
+      ],
+      "dependsOrder": "parallel",
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "always"
+      }
+    }
+  ]
+}

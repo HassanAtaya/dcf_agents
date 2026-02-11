@@ -1,0 +1,16 @@
+<aside class="sidebar" [class.collapsed]="collapsed">
+  <button class="toggle-btn" (click)="toggleSidebar()">
+    <i [class]="collapsed ? 'pi pi-angle-right' : 'pi pi-angle-left'"></i>
+  </button>
+  <nav class="sidebar-nav">
+    <a *ngFor="let item of menuItems"
+       [routerLink]="item.route"
+       routerLinkActive="active"
+       class="sidebar-item"
+       [class.hidden-item]="!isVisible(item)"
+       [title]="ts.t(item.labelKey)">
+      <i [class]="item.icon"></i>
+      <span class="sidebar-label" *ngIf="!collapsed">{{ ts.t(item.labelKey) }}</span>
+    </a>
+  </nav>
+</aside>

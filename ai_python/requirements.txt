@@ -1,0 +1,7 @@
+flask==3.0.0
+flask-cors==4.0.0
+openai>=1.68.0
+crewai>=0.100.1
+crewai-tools>=0.36.0
+openpyxl>=3.1.2
+python-docx>=1.1.0

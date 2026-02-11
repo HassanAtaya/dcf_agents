@@ -1,0 +1,58 @@
+<div class="page-container">
+  <div class="page-header">
+    <h2><i class="pi pi-shield"></i> {{ ts.t('roles.title') }}</h2>
+    <button pButton [label]="ts.t('roles.add')" icon="pi pi-plus" (click)="openAdd()"
+            *ngIf="auth.hasPermission('add_role')"></button>
+  </div>
+
+  <p-table [value]="roles" [paginator]="true" [rows]="10" styleClass="p-datatable-sm">
+    <ng-template pTemplate="header">
+      <tr>
+        <th>{{ ts.t('common.id') }}</th>
+        <th>{{ ts.t('roles.name') }}</th>
+        <th>{{ ts.t('roles.permissions') }}</th>
+        <th>{{ ts.t('common.actions') }}</th>
+      </tr>
+    </ng-template>
+    <ng-template pTemplate="body" let-role>
+      <tr>
+        <td>{{ role.id }}</td>
+        <td>{{ role.name }}</td>
+        <td>
+          <span *ngFor="let p of role.permissions; let last = last">
+            {{ p.name }}<span *ngIf="!last">, </span>
+          </span>
+        </td>
+        <td>
+          <div class="action-buttons" *ngIf="!isAdmin(role)">
+            <button pButton icon="pi pi-pencil" class="p-button-text p-button-sm"
+                    (click)="openEdit(role)" *ngIf="auth.hasPermission('edit_role')"></button>
+            <button pButton icon="pi pi-trash" class="p-button-text p-button-danger p-button-sm"
+                    (click)="confirmDelete(role)" *ngIf="auth.hasPermission('delete_role')"></button>
+          </div>
+          <span *ngIf="isAdmin(role)" class="admin-badge">{{ ts.t('roles.protected') }}</span>
+        </td>
+      </tr>
+    </ng-template>
+  </p-table>
+</div>
+
+<p-dialog [header]="editMode ? ts.t('roles.edit') : ts.t('roles.add')" [(visible)]="showDialog"
+          [modal]="true" [style]="{ width: '500px' }" (onShow)="onDialogShow()">
+  <div class="dialog-form">
+    <div class="field">
+      <label>{{ ts.t('roles.name') }}</label>
+      <input #roleNameInput type="text" pInputText [(ngModel)]="roleName" [placeholder]="ts.t('roles.name')" />
+    </div>
+    <div class="field">
+      <label>{{ ts.t('roles.permissions') }}</label>
+      <p-multiSelect [options]="permissions" [(ngModel)]="selectedPermissionIds"
+                     optionLabel="name" optionValue="id" [placeholder]="ts.t('common.select')"
+                     [style]="{ width: '100%' }"></p-multiSelect>
+    </div>
+  </div>
+  <ng-template pTemplate="footer">
+    <button pButton [label]="ts.t('common.cancel')" icon="pi pi-times" class="p-button-text" (click)="showDialog = false"></button>
+    <button pButton [label]="ts.t('common.save')" icon="pi pi-check" (click)="save()"></button>
+  </ng-template>
+</p-dialog>

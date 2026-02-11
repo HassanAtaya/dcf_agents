@@ -1,0 +1,13 @@
+<header class="app-header">
+  <div class="header-left">
+    <img src="logo.png" alt="DCF Production" class="header-logo" />
+    <span class="header-title">{{ ts.t('header.title') }}</span>
+  </div>
+  <div class="header-right">
+    <span class="header-username">{{ auth.user?.firstname }} {{ auth.user?.lastname }}</span>
+    <button pButton icon="pi pi-user" class="p-button-text p-button-rounded header-btn"
+            (click)="goToProfile()" [pTooltip]="ts.t('header.profile')"></button>
+    <button pButton icon="pi pi-sign-out" class="p-button-text p-button-rounded header-btn"
+            (click)="logout()" [pTooltip]="ts.t('header.logout')"></button>
+  </div>
+</header>

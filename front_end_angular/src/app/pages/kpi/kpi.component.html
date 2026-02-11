@@ -1,0 +1,97 @@
+<div class="page-container">
+  <h2><i class="pi pi-chart-bar"></i> {{ ts.t('kpi.title') }}</h2>
+
+  <!-- Summary Cards -->
+  <div class="kpi-cards">
+    <p-card class="kpi-card">
+      <div class="card-content">
+        <div class="card-number">{{ totalAnalyses }}</div>
+        <div class="card-label">{{ ts.t('kpi.total') }}</div>
+      </div>
+    </p-card>
+    <p-card class="kpi-card">
+      <div class="card-content">
+        <div class="card-number success">{{ validatedCount }}</div>
+        <div class="card-label">{{ ts.t('kpi.validated') }}</div>
+      </div>
+    </p-card>
+    <p-card class="kpi-card">
+      <div class="card-content">
+        <div class="card-number info">{{ uniqueCompanies }}</div>
+        <div class="card-label">{{ ts.t('kpi.unique_companies') }}</div>
+      </div>
+    </p-card>
+  </div>
+
+  <!-- Charts -->
+  <div class="charts-row" *ngIf="logs.length > 0">
+    <div class="chart-box">
+      <h3>{{ ts.t('kpi.status_breakdown') }}</h3>
+      <p-chart type="doughnut" [data]="statusChartData" [options]="statusChartOptions" [style]="{'width': '100%', 'max-width': '300px', 'margin': '0 auto'}"></p-chart>
+    </div>
+    <div class="chart-box">
+      <h3>{{ ts.t('kpi.monthly') }}</h3>
+      <p-chart type="bar" [data]="monthlyChartData" [options]="monthlyChartOptions" [style]="{'width': '100%'}"></p-chart>
+    </div>
+    <div class="chart-box">
+      <h3>{{ ts.t('kpi.top_companies') }}</h3>
+      <p-chart type="doughnut" [data]="companyChartData" [options]="companyChartOptions" [style]="{'width': '100%', 'max-width': '300px', 'margin': '0 auto'}"></p-chart>
+    </div>
+  </div>
+
+  <!-- Logs Table -->
+  <div class="logs-table">
+    <p-table [value]="logs" [loading]="loading" [paginator]="true" [rows]="10"
+             [showCurrentPageReport]="true" [rowsPerPageOptions]="[10, 25, 50]"
+             styleClass="p-datatable-sm p-datatable-striped">
+      <ng-template pTemplate="header">
+        <tr>
+          <th>{{ ts.t('kpi.col_id') }}</th>
+          <th>{{ ts.t('kpi.col_date') }}</th>
+          <th>{{ ts.t('kpi.col_user') }}</th>
+          <th>{{ ts.t('kpi.col_company') }}</th>
+          <th>{{ ts.t('kpi.col_status') }}</th>
+          <th>{{ ts.t('kpi.col_description') }}</th>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="body" let-log>
+        <tr>
+          <td>{{ log.id }}</td>
+          <td>{{ log.createdAt | date:'yyyy-MM-dd HH:mm' }}</td>
+          <td>{{ log.username }}</td>
+          <td>{{ log.companyName }}</td>
+          <td>
+            <span class="status-badge"
+                  [class.validated]="log.validationStatus?.toLowerCase().includes('validated')"
+                  [class.rejected]="log.validationStatus?.toLowerCase().includes('rejected')">
+              {{ log.validationStatus || 'N/A' }}
+            </span>
+          </td>
+          <td class="desc-cell">
+            <span class="desc-preview">{{ log.description?.substring(0, 80) }}{{ log.description?.length > 80 ? '...' : '' }}</span>
+            <button *ngIf="log.description?.length > 80" pButton icon="pi pi-eye"
+                    class="p-button-text p-button-sm p-button-rounded view-btn"
+                    (click)="viewDescription(log)"
+                    [pTooltip]="ts.t('kpi.view_more')"></button>
+          </td>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="emptymessage">
+        <tr><td colspan="6" class="text-center">{{ ts.t('kpi.no_data') }}</td></tr>
+      </ng-template>
+    </p-table>
+  </div>
+
+  <!-- Description Dialog -->
+  <p-dialog [header]="selectedLog?.companyName || ''" [(visible)]="showDescDialog"
+            [modal]="true" [style]="{width: '60vw', maxHeight: '80vh'}" [draggable]="false">
+    <div class="desc-dialog-content">
+      <div class="desc-meta">
+        <span><b>{{ ts.t('kpi.col_user') }}:</b> {{ selectedLog?.username }}</span>
+        <span><b>{{ ts.t('kpi.col_date') }}:</b> {{ selectedLog?.createdAt | date:'yyyy-MM-dd HH:mm' }}</span>
+        <span><b>{{ ts.t('kpi.col_status') }}:</b> {{ selectedLog?.validationStatus }}</span>
+      </div>
+      <pre class="desc-full">{{ selectedLog?.description }}</pre>
+    </div>
+  </p-dialog>
+</div>

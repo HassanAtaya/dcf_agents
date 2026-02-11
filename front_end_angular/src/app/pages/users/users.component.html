@@ -1,0 +1,76 @@
+<div class="page-container">
+  <div class="page-header">
+    <h2><i class="pi pi-users"></i> {{ ts.t('users.title') }}</h2>
+    <button pButton [label]="ts.t('users.add')" icon="pi pi-plus" (click)="openAdd()"
+            *ngIf="auth.hasPermission('add_user')"></button>
+  </div>
+
+  <p-table [value]="users" [paginator]="true" [rows]="10" styleClass="p-datatable-sm">
+    <ng-template pTemplate="header">
+      <tr>
+        <th>{{ ts.t('common.id') }}</th>
+        <th>{{ ts.t('users.username') }}</th>
+        <th>{{ ts.t('users.firstname') }}</th>
+        <th>{{ ts.t('users.lastname') }}</th>
+        <th>{{ ts.t('users.role') }}</th>
+        <th>{{ ts.t('common.actions') }}</th>
+      </tr>
+    </ng-template>
+    <ng-template pTemplate="body" let-user>
+      <tr>
+        <td>{{ user.id }}</td>
+        <td>{{ user.username }}</td>
+        <td>{{ user.firstname }}</td>
+        <td>{{ user.lastname }}</td>
+        <td>{{ getRoleName(user) }}</td>
+        <td>
+          <div class="action-buttons" *ngIf="!isAdminUser(user)">
+            <button pButton icon="pi pi-pencil" class="p-button-text p-button-sm"
+                    (click)="openEdit(user)" *ngIf="auth.hasPermission('edit_user')"></button>
+            <button pButton icon="pi pi-trash" class="p-button-text p-button-danger p-button-sm"
+                    (click)="confirmDelete(user)" *ngIf="auth.hasPermission('delete_user')"></button>
+          </div>
+          <span *ngIf="isAdminUser(user)" class="admin-badge">{{ ts.t('users.protected') }}</span>
+        </td>
+      </tr>
+    </ng-template>
+  </p-table>
+</div>
+
+<p-dialog [header]="editMode ? ts.t('users.edit') : ts.t('users.add')" [(visible)]="showDialog"
+          [modal]="true" [style]="{ width: '550px' }" (onShow)="onDialogShow()">
+  <div class="dialog-form">
+    <div class="field">
+      <label>{{ ts.t('users.username') }}</label>
+      <input #userUsernameInput type="text" pInputText [(ngModel)]="form.username" [placeholder]="ts.t('users.username')" />
+    </div>
+    <div class="field">
+      <label>{{ editMode ? ts.t('users.password_edit') : ts.t('users.password') }}</label>
+      <input type="password" pInputText [(ngModel)]="form.password" [placeholder]="ts.t('users.password')" />
+    </div>
+    <div class="field">
+      <label>{{ ts.t('users.firstname') }}</label>
+      <input type="text" pInputText [(ngModel)]="form.firstname" [placeholder]="ts.t('users.firstname')" />
+    </div>
+    <div class="field">
+      <label>{{ ts.t('users.lastname') }}</label>
+      <input type="text" pInputText [(ngModel)]="form.lastname" [placeholder]="ts.t('users.lastname')" />
+    </div>
+    <div class="field">
+      <label>{{ ts.t('users.role') }}</label>
+      <p-dropdown [options]="roles" [(ngModel)]="form.roleId"
+                  optionLabel="name" optionValue="id" [placeholder]="ts.t('common.select')"
+                  [style]="{ width: '100%' }"></p-dropdown>
+    </div>
+    <div class="field">
+      <label>{{ ts.t('users.language') }}</label>
+      <p-dropdown [options]="languages" [(ngModel)]="form.language"
+                  optionLabel="label" optionValue="value"
+                  [style]="{ width: '100%' }"></p-dropdown>
+    </div>
+  </div>
+  <ng-template pTemplate="footer">
+    <button pButton [label]="ts.t('common.cancel')" icon="pi pi-times" class="p-button-text" (click)="showDialog = false"></button>
+    <button pButton [label]="ts.t('common.save')" icon="pi pi-check" (click)="save()"></button>
+  </ng-template>
+</p-dialog>
