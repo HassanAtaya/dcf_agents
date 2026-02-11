@@ -114,6 +114,7 @@ const TRANSLATIONS: Record<Lang, Record<string, string>> = {
     'kpi.col_status': 'Status',
     'kpi.col_description': 'Description',
     'kpi.no_data': 'No analyses recorded yet',
+    'kpi.view_more': 'View full description',
     // Common
     'common.save': 'Save',
     'common.cancel': 'Cancel',
@@ -224,6 +225,7 @@ const TRANSLATIONS: Record<Lang, Record<string, string>> = {
     'kpi.col_status': 'Statut',
     'kpi.col_description': 'Description',
     'kpi.no_data': 'Aucune analyse enregistr\u00E9e',
+    'kpi.view_more': 'Voir la description compl\u00E8te',
     'common.save': 'Enregistrer',
     'common.cancel': 'Annuler',
     'common.delete': 'Supprimer',
@@ -333,6 +335,7 @@ const TRANSLATIONS: Record<Lang, Record<string, string>> = {
     'kpi.col_status': '\u0627\u0644\u062D\u0627\u0644\u0629',
     'kpi.col_description': '\u0627\u0644\u0648\u0635\u0641',
     'kpi.no_data': '\u0644\u0627 \u062A\u0648\u062C\u062F \u062A\u062D\u0644\u064A\u0644\u0627\u062A \u0645\u0633\u062C\u0644\u0629',
+    'kpi.view_more': '\u0639\u0631\u0636 \u0627\u0644\u0648\u0635\u0641 \u0627\u0644\u0643\u0627\u0645\u0644',
     'common.save': '\u062D\u0641\u0638',
     'common.cancel': '\u0625\u0644\u063A\u0627\u0621',
     'common.delete': '\u062D\u0630\u0641',

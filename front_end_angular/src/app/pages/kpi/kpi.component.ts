@@ -5,6 +5,7 @@ import { ChartModule } from 'primeng/chart';
 import { CardModule } from 'primeng/card';
 import { ButtonModule } from 'primeng/button';
 import { DialogModule } from 'primeng/dialog';
+import { TooltipModule } from 'primeng/tooltip';
 import { ApiService } from '../../services/api.service';
 import { TranslateService } from '../../services/translate.service';
 import { DcfLog } from '../../models/dcf-log.model';
@@ -12,7 +13,7 @@ import { DcfLog } from '../../models/dcf-log.model';
 @Component({
   selector: 'app-kpi',
   standalone: true,
-  imports: [CommonModule, TableModule, ChartModule, CardModule, ButtonModule, DialogModule],
+  imports: [CommonModule, TableModule, ChartModule, CardModule, ButtonModule, DialogModule, TooltipModule],
   templateUrl: './kpi.component.html',
   styleUrl: './kpi.component.scss'
 })
