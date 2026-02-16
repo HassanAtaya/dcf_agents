@@ -18,8 +18,18 @@ if not defined PROJECT_PATH (
 )
 echo Project path: %PROJECT_PATH%
 
-REM -- Write .env file for docker compose --
+REM -- Build Java JAR so Docker can copy it --
+echo Building Java backend (Maven)...
+cd /d "%PROJECT_PATH%"
+call mvn -f back_end_javaspringboot\pom.xml package -DskipTests
+if errorlevel 1 (
+    echo ERROR: Maven build failed. Ensure Maven is installed and back_end_javaspringboot builds successfully.
+    pause
+    exit /b 1
+)
 cd /d "%PROJECT_PATH%\docker"
+
+REM -- Write .env file for docker compose --
 echo PROJECT_PATH=%PROJECT_PATH%> .env
 
 echo Stopping and removing old containers...
