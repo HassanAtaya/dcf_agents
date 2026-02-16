@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
+import { Component, OnInit, ViewChild, ElementRef, signal, AfterViewInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TableModule } from 'primeng/table';
@@ -13,18 +13,32 @@ import { AuthService } from '../../services/auth.service';
 import { TranslateService } from '../../services/translate.service';
 import { AppUser, UserDto } from '../../models/user.model';
 import { Role } from '../../models/role.model';
+import { Subject, debounceTime, distinctUntilChanged } from 'rxjs';
+
+const PAGE_SIZE = 15;
 
 @Component({
   selector: 'app-users',
   standalone: true,
-  imports: [CommonModule, FormsModule, TableModule, ButtonModule, DialogModule, InputTextModule, DropdownModule, ConfirmDialogModule],
+  imports: [
+    CommonModule, FormsModule, TableModule, ButtonModule, DialogModule,
+    InputTextModule, DropdownModule, ConfirmDialogModule
+  ],
   templateUrl: './users.component.html',
   styleUrl: './users.component.scss'
 })
-export class UsersComponent implements OnInit {
+export class UsersComponent implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild('userUsernameInput') userUsernameInput!: ElementRef<HTMLInputElement>;
+  @ViewChild('scrollContainer') scrollContainer!: ElementRef<HTMLDivElement>;
 
-  users: AppUser[] = [];
+  allUsers = signal<AppUser[]>([]);
+  loadingMore = signal(false);
+  initialLoading = signal(true);
+
+  private currentPage = 0;
+  totalElements = 0;
+  private scrollListener: (() => void) | null = null;
+
   roles: Role[] = [];
   showDialog = false;
   editMode = false;
@@ -37,6 +51,8 @@ export class UsersComponent implements OnInit {
   ];
 
   form: UserDto = { username: '', password: '', firstname: '', lastname: '', language: 'en', roleId: null };
+  searchTerm = '';
+  private searchSubject = new Subject<string>();
 
   constructor(
     private api: ApiService,
@@ -50,11 +66,80 @@ export class UsersComponent implements OnInit {
     setTimeout(() => this.userUsernameInput?.nativeElement?.focus(), 100);
   }
 
-  ngOnInit(): void { this.loadData(); }
+  ngOnInit(): void {
+    this.api.getRolesAll().subscribe(data => this.roles = data);
+    this.loadPage(0);
 
-  loadData(): void {
-    this.api.getUsers().subscribe(data => this.users = data);
-    this.api.getRoles().subscribe(data => this.roles = data);
+    this.searchSubject.pipe(
+      debounceTime(300),
+      distinctUntilChanged()
+    ).subscribe(() => this.resetAndLoad());
+  }
+
+  ngAfterViewInit(): void {
+    setTimeout(() => this.attachScrollListener(), 200);
+  }
+
+  ngOnDestroy(): void {
+    this.detachScrollListener();
+    this.searchSubject.complete();
+  }
+
+  get hasMore(): boolean {
+    return this.allUsers().length < this.totalElements;
+  }
+
+  private attachScrollListener(): void {
+    const el = this.scrollContainer?.nativeElement;
+    if (!el) return;
+    this.scrollListener = () => {
+      const threshold = 50;
+      const atBottom = el.scrollHeight - el.scrollTop - el.clientHeight < threshold;
+      if (atBottom && this.hasMore && !this.loadingMore()) {
+        this.loadPage(this.currentPage + 1);
+      }
+    };
+    el.addEventListener('scroll', this.scrollListener, { passive: true });
+  }
+
+  private detachScrollListener(): void {
+    const el = this.scrollContainer?.nativeElement;
+    if (el && this.scrollListener) {
+      el.removeEventListener('scroll', this.scrollListener);
+    }
+  }
+
+  private loadPage(page: number): void {
+    this.loadingMore.set(true);
+    this.api.getUsers({ page, size: PAGE_SIZE, sort: 'id,asc', search: this.searchTerm || undefined }).subscribe({
+      next: (p) => {
+        this.currentPage = page;
+        this.totalElements = p.totalElements;
+        if (page === 0) {
+          this.allUsers.set(p.content);
+        } else {
+          this.allUsers.set([...this.allUsers(), ...p.content]);
+        }
+        this.loadingMore.set(false);
+        this.initialLoading.set(false);
+      },
+      error: () => {
+        this.loadingMore.set(false);
+        this.initialLoading.set(false);
+      }
+    });
+  }
+
+  private resetAndLoad(): void {
+    this.currentPage = 0;
+    this.totalElements = 0;
+    this.allUsers.set([]);
+    this.initialLoading.set(true);
+    this.loadPage(0);
+  }
+
+  onSearchChange(): void {
+    this.searchSubject.next(this.searchTerm);
   }
 
   openAdd(): void {
@@ -86,7 +171,7 @@ export class UsersComponent implements OnInit {
     obs.subscribe({
       next: () => {
         this.showDialog = false;
-        this.loadData();
+        this.resetAndLoad();
         this.messageService.add({ severity: 'success', summary: this.ts.t('common.success'), detail: this.ts.t('users.saved') });
       }
     });
@@ -100,7 +185,7 @@ export class UsersComponent implements OnInit {
       accept: () => {
         this.api.deleteUser(user.id!).subscribe({
           next: () => {
-            this.loadData();
+            this.resetAndLoad();
             this.messageService.add({ severity: 'success', summary: this.ts.t('common.success'), detail: this.ts.t('users.deleted') });
           }
         });

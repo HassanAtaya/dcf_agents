@@ -459,12 +459,28 @@ def create_zip(word_bytes, excel_bytes):
 #  CREWAI  PIPELINE
 # ═══════════════════════════════════════════════════════════════
 
+def _check_cancelled(job_id: str) -> bool:
+    """Return True if the job was cancelled and mark final state."""
+    job = jobs.get(job_id)
+    if not job:
+        return True
+    if job.get('cancelled'):
+        logger.info('[Job %s] Job was cancelled by user. Stopping pipeline.', job_id[:8])
+        job['status'] = 'cancelled'
+        job['current_agent_name'] = 'Cancelled by user'
+        return True
+    return False
+
+
 def run_dcf_pipeline(job_id, company_name, api_key, prompts):
     """Run the 4 CrewAI agents sequentially, then generate ZIP (Word + Excel)."""
     try:
         os.environ['OPENAI_API_KEY'] = api_key
         client = OpenAI(api_key=api_key)
         logger.info('[Job %s] === DCF PIPELINE STARTED for "%s" ===', job_id[:8], company_name)
+
+        if _check_cancelled(job_id):
+            return
 
         # ─── Agent 1: Company Existence Validation ───────────────────
         jobs[job_id]['current_agent'] = 1
@@ -481,14 +497,24 @@ def run_dcf_pipeline(job_id, company_name, api_key, prompts):
         task1 = Task(
             description=(
                 f'Verify the existence and identity of the company: {company_name}. '
-                f'Return structured information: Company Status (Exists / Does Not Exist / Uncertain), '
+                f'Return structured information: Company Status [Exists / Does Not Exist / Uncertain], '
                 f'exact legal name, ticker (if public), country, industry, official website, '
-                f'and a 2-3 line factual description.'
+                f'and a 2-3 line factual description.\n\n'
+                f'IMPORTANT RULES:\n'
+                f'- For descriptive or marketing-style names (e.g., with slogans or long taglines), '
+                f'assume the company may be real and search broadly (official website, business registries, '
+                f'LinkedIn, credible directories, press releases).\n'
+                f'- Use \"Does Not Exist\" ONLY when repeated, multi-source searching strongly indicates the entity '
+                f'is fictional, a placeholder, or appears only in examples/training material.\n'
+                f'- When evidence is sparse, ambiguous, or conflicting, prefer \"Uncertain\" and explain why.\n'
+                f'- It is better to return \"Uncertain\" for a potentially real small/private company than to '
+                f'incorrectly say \"Does Not Exist\".'
             ),
             agent=agent1,
             expected_output=(
                 'Structured company verification report with status, legal name, '
-                'ticker, country, industry, website, and description.'
+                'ticker, country, industry, website, and description. Status must be clearly labeled as '
+                '\"Company Status: [Exists/Does Not Exist/Uncertain]\".'
             )
         )
         crew1 = Crew(agents=[agent1], tasks=[task1], process=Process.sequential, verbose=False)
@@ -497,20 +523,45 @@ def run_dcf_pipeline(job_id, company_name, api_key, prompts):
 
         logger.info('[Job %s] Agent 1 completed. Result length: %d chars', job_id[:8], len(result1_str))
 
-        if 'does not exist' in result1_str.lower():
-            logger.warning('[Job %s] Agent 1: Company does NOT exist. Stopping pipeline.', job_id[:8])
+        # Try to parse a structured Company Status from Agent 1 output.
+        status = None
+        try:
+            m = re.search(
+                r'Company Status\\s*[:\\-]\\s*\\[?(?P<status>[A-Za-z \\-/]+)\\]?',
+                result1_str,
+                re.IGNORECASE,
+            )
+            if m:
+                status = m.group('status').strip().lower()
+                logger.info('[Job %s] Agent 1 parsed status: %s', job_id[:8], status)
+        except Exception as parse_err:
+            logger.warning('[Job %s] Failed to parse Company Status from Agent 1 output: %s', job_id[:8], parse_err)
+
+        # Stop the pipeline when Agent 1 cannot confidently confirm existence.
+        # If status is "Does Not Exist" OR "Uncertain", we do NOT continue to the next agents.
+        if status in ('does not exist', 'nonexistent', 'does-not-exist', 'uncertain'):
+            logger.warning(
+                '[Job %s] Agent 1: Company status is %s. Stopping pipeline before next agents.',
+                job_id[:8],
+                status,
+            )
             jobs[job_id]['agent_results'].append({
                 'agent': 1, 'name': 'Company Existence Validation', 'result': result1_str
             })
             jobs[job_id]['status'] = 'error'
+            safe_status = status or "Unknown"
             jobs[job_id]['error'] = (
-                f'Company verification failed: The company "{company_name}" does not appear to exist.'
+                f'Company verification failed: The company "{company_name}" was marked as "{safe_status}" '
+                'by the verification agent, so the DCF pipeline was stopped.'
             )
             return
 
         jobs[job_id]['agent_results'].append({
             'agent': 1, 'name': 'Company Existence Validation', 'result': result1_str
         })
+
+        if _check_cancelled(job_id):
+            return
 
         # ─── Agent 2: DCF Input Data Collection ─────────────────────
         jobs[job_id]['current_agent'] = 2
@@ -550,6 +601,9 @@ def run_dcf_pipeline(job_id, company_name, api_key, prompts):
         jobs[job_id]['agent_results'].append({
             'agent': 2, 'name': 'DCF Input Data Collection', 'result': result2_str
         })
+
+        if _check_cancelled(job_id):
+            return
 
         # ─── Agent 3: DCF Calculation ────────────────────────────────
         jobs[job_id]['current_agent'] = 3
@@ -593,6 +647,9 @@ def run_dcf_pipeline(job_id, company_name, api_key, prompts):
         jobs[job_id]['agent_results'].append({
             'agent': 3, 'name': 'DCF Calculation', 'result': result3_str
         })
+
+        if _check_cancelled(job_id):
+            return
 
         # ─── Agent 4: Validation & Realism Audit ────────────────────
         jobs[job_id]['current_agent'] = 4
@@ -647,6 +704,9 @@ def run_dcf_pipeline(job_id, company_name, api_key, prompts):
         jobs[job_id]['agent_results'].append({
             'agent': 4, 'name': 'Validation & Realism Audit', 'result': result4_str
         })
+
+        if _check_cancelled(job_id):
+            return
 
         # ─── Extract structured data ────────────────────────────────
         jobs[job_id]['current_agent'] = 0
@@ -716,6 +776,7 @@ def start_dcf():
         'zip_data': None,
         'zip_filename': None,
         'company_name': company_name,
+        'cancelled': False,
     }
 
     thread = threading.Thread(
@@ -743,6 +804,33 @@ def dcf_status(job_id):
         'error': job['error'],
         'download_ready': job['download_ready'],
         'zip_filename': job.get('zip_filename'),
+        'cancelled': job.get('cancelled', False),
+    })
+
+
+@app.route('/api/dcf/cancel/<job_id>', methods=['POST'])
+def dcf_cancel(job_id):
+    """Request cancellation of a running DCF analysis job."""
+    job = jobs.get(job_id)
+    if not job:
+        return jsonify({'error': 'Job not found'}), 404
+
+    job['cancelled'] = True
+    # Mark job as cancelled immediately from API point of view.
+    if job.get('status') == 'running':
+        job['status'] = 'cancelled'
+        job['current_agent_name'] = 'Cancelled by user'
+
+    logger.info('Cancellation requested for job %s', job_id[:8])
+    return jsonify({
+        'status': job['status'],
+        'current_agent': job['current_agent'],
+        'current_agent_name': job['current_agent_name'],
+        'agent_results': job['agent_results'],
+        'error': job['error'],
+        'download_ready': job['download_ready'],
+        'zip_filename': job.get('zip_filename'),
+        'cancelled': True,
     })
 
 

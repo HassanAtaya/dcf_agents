@@ -11,9 +11,15 @@
                [disabled]="isRunning"
                (keyup.enter)="startDcf()" />
       </div>
-      <button pButton [label]="ts.t('dcf.go')" icon="pi pi-play"
-              (click)="startDcf()" [loading]="isRunning"
-              class="go-btn"></button>
+      <div class="actions">
+        <button pButton [label]="ts.t('dcf.go')" icon="pi pi-play"
+                (click)="startDcf()" [loading]="isRunning"
+                class="go-btn"></button>
+        <button pButton *ngIf="isRunning && jobId"
+                [label]="ts.t('dcf.stop')" icon="pi pi-stop"
+                class="stop-btn p-button-text p-button-danger"
+                (click)="stopDcf()"></button>
+      </div>
     </div>
   </div>
 

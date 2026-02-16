@@ -1,7 +1,7 @@
-import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
+import { Component, OnInit, ViewChild, ElementRef, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { TableModule } from 'primeng/table';
+import { TableModule, TableLazyLoadEvent } from 'primeng/table';
 import { ButtonModule } from 'primeng/button';
 import { DialogModule } from 'primeng/dialog';
 import { InputTextModule } from 'primeng/inputtext';
@@ -22,7 +22,14 @@ import { Permission } from '../../models/permission.model';
 export class PermissionsComponent implements OnInit {
   @ViewChild('permNameInput') permNameInput!: ElementRef<HTMLInputElement>;
 
-  permissions: Permission[] = [];
+  private contentSignal = signal<Permission[]>([]);
+  private totalRecordsSignal = signal(0);
+  private loadingSignal = signal(false);
+
+  permissions = this.contentSignal.asReadonly();
+  totalRecords = this.totalRecordsSignal.asReadonly();
+  loading = this.loadingSignal.asReadonly();
+
   showDialog = false;
   editMode = false;
   selectedPerm: Permission | null = null;
@@ -40,10 +47,25 @@ export class PermissionsComponent implements OnInit {
     setTimeout(() => this.permNameInput?.nativeElement?.focus(), 100);
   }
 
-  ngOnInit(): void { this.loadData(); }
+  ngOnInit(): void {
+    // Initial load is done by table's first lazy load
+  }
 
-  loadData(): void {
-    this.api.getPermissions().subscribe(data => this.permissions = data);
+  onLazyLoad(event: TableLazyLoadEvent): void {
+    this.loadingSignal.set(true);
+    const page = event.first ?? 0;
+    const size = event.rows ?? 20;
+    const sort = event.sortField
+      ? `${event.sortField},${event.sortOrder === 1 ? 'asc' : 'desc'}`
+      : undefined;
+    this.api.getPermissions({ page: Math.floor(page / size), size, sort }).subscribe({
+      next: (p) => {
+        this.contentSignal.set(p.content);
+        this.totalRecordsSignal.set(p.totalElements);
+        this.loadingSignal.set(false);
+      },
+      error: () => this.loadingSignal.set(false)
+    });
   }
 
   openAdd(): void {
@@ -69,7 +91,7 @@ export class PermissionsComponent implements OnInit {
     obs.subscribe({
       next: () => {
         this.showDialog = false;
-        this.loadData();
+        this.onLazyLoad({ first: 0, rows: 20 });
         this.messageService.add({ severity: 'success', summary: this.ts.t('common.success'), detail: this.ts.t('permissions.saved') });
       }
     });
@@ -83,7 +105,7 @@ export class PermissionsComponent implements OnInit {
       accept: () => {
         this.api.deletePermission(perm.id).subscribe({
           next: () => {
-            this.loadData();
+            this.onLazyLoad({ first: 0, rows: 20 });
             this.messageService.add({ severity: 'success', summary: this.ts.t('common.success'), detail: this.ts.t('permissions.deleted') });
           }
         });

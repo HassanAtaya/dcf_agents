@@ -38,4 +38,5 @@ export interface DcfStatusResponse {
   error: string | null;
   download_ready: boolean;
   zip_filename: string | null;
+  cancelled?: boolean;
 }

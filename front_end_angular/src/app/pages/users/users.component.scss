@@ -4,6 +4,44 @@
     h2 { display: flex; align-items: center; gap: 0.5rem; color: var(--color-primary); }
   }
 }
+
+.table-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.75rem;
+  gap: 1rem;
+
+  .p-input-icon-left {
+    flex: 0 0 300px;
+    i { top: 50%; transform: translateY(-50%); }
+    input { width: 100%; padding-left: 2rem; }
+  }
+
+  .user-count {
+    font-size: 0.85rem;
+    color: #718096;
+    white-space: nowrap;
+  }
+}
+
+.users-scroll-container {
+  max-height: 520px;
+  overflow-y: auto;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+}
+
+.load-more-indicator {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.75rem 0;
+  color: #718096;
+  font-size: 0.85rem;
+}
+
 .action-buttons { display: flex; gap: 0.25rem; }
 .admin-badge {
   background: var(--color-warning); color: white; padding: 0.2rem 0.6rem;

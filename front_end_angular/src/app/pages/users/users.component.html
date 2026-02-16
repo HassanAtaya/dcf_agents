@@ -5,36 +5,58 @@
             *ngIf="auth.hasPermission('add_user')"></button>
   </div>
 
-  <p-table [value]="users" [paginator]="true" [rows]="10" styleClass="p-datatable-sm">
-    <ng-template pTemplate="header">
-      <tr>
-        <th>{{ ts.t('common.id') }}</th>
-        <th>{{ ts.t('users.username') }}</th>
-        <th>{{ ts.t('users.firstname') }}</th>
-        <th>{{ ts.t('users.lastname') }}</th>
-        <th>{{ ts.t('users.role') }}</th>
-        <th>{{ ts.t('common.actions') }}</th>
-      </tr>
-    </ng-template>
-    <ng-template pTemplate="body" let-user>
-      <tr>
-        <td>{{ user.id }}</td>
-        <td>{{ user.username }}</td>
-        <td>{{ user.firstname }}</td>
-        <td>{{ user.lastname }}</td>
-        <td>{{ getRoleName(user) }}</td>
-        <td>
-          <div class="action-buttons" *ngIf="!isAdminUser(user)">
-            <button pButton icon="pi pi-pencil" class="p-button-text p-button-sm"
-                    (click)="openEdit(user)" *ngIf="auth.hasPermission('edit_user')"></button>
-            <button pButton icon="pi pi-trash" class="p-button-text p-button-danger p-button-sm"
-                    (click)="confirmDelete(user)" *ngIf="auth.hasPermission('delete_user')"></button>
-          </div>
-          <span *ngIf="isAdminUser(user)" class="admin-badge">{{ ts.t('users.protected') }}</span>
-        </td>
-      </tr>
-    </ng-template>
-  </p-table>
+  <div class="table-toolbar">
+    <span class="p-input-icon-left">
+      <i class="pi pi-search"></i>
+      <input type="text"
+             pInputText
+             [(ngModel)]="searchTerm"
+             (ngModelChange)="onSearchChange()"
+             [placeholder]="ts.t('users.search')" />
+    </span>
+    <span class="user-count" *ngIf="!initialLoading()">{{ allUsers().length }} / {{ totalElements }} {{ ts.t('users.title').toLowerCase() }}</span>
+  </div>
+
+  <div #scrollContainer class="users-scroll-container">
+    <p-table [value]="allUsers()" styleClass="p-datatable-sm p-datatable-striped">
+      <ng-template pTemplate="header">
+        <tr>
+          <th>{{ ts.t('common.id') }}</th>
+          <th>{{ ts.t('users.username') }}</th>
+          <th>{{ ts.t('users.firstname') }}</th>
+          <th>{{ ts.t('users.lastname') }}</th>
+          <th>{{ ts.t('users.role') }}</th>
+          <th>{{ ts.t('common.actions') }}</th>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="body" let-user>
+        <tr>
+          <td>{{ user.id }}</td>
+          <td>{{ user.username }}</td>
+          <td>{{ user.firstname }}</td>
+          <td>{{ user.lastname }}</td>
+          <td>{{ getRoleName(user) }}</td>
+          <td>
+            <div class="action-buttons" *ngIf="!isAdminUser(user)">
+              <button pButton icon="pi pi-pencil" class="p-button-text p-button-sm"
+                      (click)="openEdit(user)" *ngIf="auth.hasPermission('edit_user')"></button>
+              <button pButton icon="pi pi-trash" class="p-button-text p-button-danger p-button-sm"
+                      (click)="confirmDelete(user)" *ngIf="auth.hasPermission('delete_user')"></button>
+            </div>
+            <span *ngIf="isAdminUser(user)" class="admin-badge">{{ ts.t('users.protected') }}</span>
+          </td>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="emptymessage">
+        <tr><td colspan="6" class="text-center">{{ ts.t('users.no_data') }}</td></tr>
+      </ng-template>
+    </p-table>
+
+    <div class="load-more-indicator" *ngIf="loadingMore()">
+      <i class="pi pi-spin pi-spinner"></i>
+      <span>Loading more...</span>
+    </div>
+  </div>
 </div>
 
 <p-dialog [header]="editMode ? ts.t('users.edit') : ts.t('users.add')" [(visible)]="showDialog"

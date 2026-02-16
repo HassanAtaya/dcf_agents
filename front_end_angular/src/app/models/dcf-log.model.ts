@@ -6,3 +6,9 @@ export interface DcfLog {
   description: string;
   validationStatus: string;
 }
+
+export interface DcfLogStats {
+  totalAnalyses: number;
+  validatedCount: number;
+  uniqueCompanies: number;
+}

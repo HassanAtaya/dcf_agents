@@ -95,11 +95,13 @@ export class DcfComponent implements OnDestroy {
       this.api.getDcfStatus(this.jobId).subscribe({
         next: (status) => {
           this.status = status;
-          if (status.status === 'complete' || status.status === 'error') {
+          if (status.status === 'complete' || status.status === 'error' || status.status === 'cancelled' || status.cancelled) {
             this.isRunning = false;
             this.stopPolling();
             if (status.status === 'error') {
               this.messageService.add({ severity: 'error', summary: this.ts.t('dcf.error'), detail: status.error || 'Unknown error' });
+            } else if (status.status === 'cancelled' || status.cancelled) {
+              this.messageService.add({ severity: 'info', summary: this.ts.t('dcf.stopped'), detail: this.ts.t('dcf.stopped_detail') });
             }
           }
         },
@@ -116,6 +118,26 @@ export class DcfComponent implements OnDestroy {
       clearInterval(this.pollInterval);
       this.pollInterval = null;
     }
+  }
+
+  stopDcf(): void {
+    if (!this.jobId) {
+      this.isRunning = false;
+      this.stopPolling();
+      return;
+    }
+    this.api.cancelDcf(this.jobId).subscribe({
+      next: (status) => {
+        this.status = status;
+        this.isRunning = false;
+        this.stopPolling();
+        this.messageService.add({ severity: 'info', summary: this.ts.t('dcf.stopped'), detail: this.ts.t('dcf.stopped_detail') });
+      },
+      error: () => {
+        this.isRunning = false;
+        this.stopPolling();
+      }
+    });
   }
 
   downloadReport(): void {

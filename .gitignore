@@ -60,3 +60,4 @@ pip-delete-this-directory.txt
 out/
 logs/
 tmp/
+metadata/

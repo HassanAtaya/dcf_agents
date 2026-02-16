@@ -5,30 +5,24 @@
             *ngIf="auth.hasPermission('add_permission')"></button>
   </div>
 
-  <p-table [value]="permissions" [paginator]="true" [rows]="10" styleClass="p-datatable-sm">
+  <p-table [value]="permissions()" [lazy]="true" [paginator]="true" [rows]="10" [rowsPerPageOptions]="[10, 20, 50, 100]"
+          [totalRecords]="totalRecords()" [loading]="loading()" (onLazyLoad)="onLazyLoad($event)"
+          [showCurrentPageReport]="true"
+          styleClass="p-datatable-sm">
     <ng-template pTemplate="header">
       <tr>
-        <th>{{ ts.t('permissions.id') }}</th>
-        <th>{{ ts.t('permissions.name') }}</th>
-        <!-- <th>{{ ts.t('permissions.actions') }}</th> -->
+        <th pSortableColumn="id">{{ ts.t('permissions.id') }} <p-sortIcon field="id"></p-sortIcon></th>
+        <th pSortableColumn="name">{{ ts.t('permissions.name') }} <p-sortIcon field="name"></p-sortIcon></th>
       </tr>
     </ng-template>
     <ng-template pTemplate="body" let-perm>
       <tr>
         <td>{{ perm.id }}</td>
         <td>{{ perm.name }}</td>
-        <!-- <td>
-          <div class="action-buttons">
-            <button pButton icon="pi pi-pencil" class="p-button-text p-button-sm"
-                    (click)="openEdit(perm)" *ngIf="auth.hasPermission('edit_permission')"></button>
-            <button pButton icon="pi pi-trash" class="p-button-text p-button-danger p-button-sm"
-                    (click)="confirmDelete(perm)" *ngIf="auth.hasPermission('delete_permission')"></button>
-          </div>
-        </td> -->
       </tr>
     </ng-template>
     <ng-template pTemplate="emptymessage">
-      <tr><td colspan="3" class="text-center">{{ ts.t('permissions.no_data') }}</td></tr>
+      <tr><td colspan="2" class="text-center">{{ ts.t('permissions.no_data') }}</td></tr>
     </ng-template>
   </p-table>
 </div>
