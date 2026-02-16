@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<session version="1.0">
+<refactoring comment="Copy element &apos;LOCALapplication.properties&apos; to &apos;dcf-production/src/main/resources&apos;&#x0D;&#x0A;- Original project: &apos;dcf-production&apos;&#x0D;&#x0A;- Destination element: &apos;dcf-production/src/main/resources&apos;&#x0D;&#x0A;- Original element: &apos;LOCALapplication.properties&apos;" description="Copy file" destination="/src\/main\/resources=/maven.pomderived=/true=/=/optional=/true=/" element1="src/main/resources/LOCALapplication.properties" files="1" flags="589830" folders="0" id="org.eclipse.jdt.ui.copy" policy="org.eclipse.jdt.ui.copyResources" stamp="1771258759599" units="0" version="1.0"/>
+</session>
