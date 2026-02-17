@@ -8,8 +8,9 @@ import re
 import zipfile
 from datetime import datetime
 
-from flask import Flask, request, jsonify, send_file
-from flask_cors import CORS
+from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import StreamingResponse
 from crewai import Agent, Task, Crew, Process
 from openai import OpenAI
 from openpyxl import Workbook
@@ -29,8 +30,14 @@ logging.basicConfig(
 )
 logger = logging.getLogger('dcf_pipeline')
 
-app = Flask(__name__)
-CORS(app)
+app = FastAPI()
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 # In-memory job store
 jobs = {}
@@ -745,24 +752,23 @@ def run_dcf_pipeline(job_id, company_name, api_key, prompts):
 
 
 # ═══════════════════════════════════════════════════════════════
-#  FLASK ROUTES
+#  FASTAPI ROUTES
 # ═══════════════════════════════════════════════════════════════
 
-@app.route('/api/dcf/start', methods=['POST'])
-def start_dcf():
+@app.post('/api/dcf/start')
+def start_dcf(data: dict):
     """Start a DCF analysis pipeline."""
-    data = request.json
     if not data:
-        return jsonify({'error': 'No data provided'}), 400
+        raise HTTPException(status_code=400, detail='No data provided')
 
     company_name = data.get('company_name', '').strip()
     api_key = data.get('api_key', '').strip()
     prompts = data.get('prompts', {})
 
     if not company_name:
-        return jsonify({'error': 'Company name is required'}), 400
+        raise HTTPException(status_code=400, detail='Company name is required')
     if not api_key or api_key == 'NO_KEY':
-        return jsonify({'error': 'Please configure a valid OpenAI API key in Settings.'}), 400
+        raise HTTPException(status_code=400, detail='Please configure a valid OpenAI API key in Settings.')
 
     job_id = str(uuid.uuid4())
     logger.info('New DCF job started: %s for company "%s"', job_id[:8], company_name)
@@ -786,17 +792,17 @@ def start_dcf():
     thread.daemon = True
     thread.start()
 
-    return jsonify({'job_id': job_id})
+    return {'job_id': job_id}
 
 
-@app.route('/api/dcf/status/<job_id>', methods=['GET'])
-def dcf_status(job_id):
+@app.get('/api/dcf/status/{job_id}')
+def dcf_status(job_id: str):
     """Get the status of a DCF analysis job."""
     job = jobs.get(job_id)
     if not job:
-        return jsonify({'error': 'Job not found'}), 404
+        raise HTTPException(status_code=404, detail='Job not found')
 
-    return jsonify({
+    return {
         'status': job['status'],
         'current_agent': job['current_agent'],
         'current_agent_name': job['current_agent_name'],
@@ -805,15 +811,15 @@ def dcf_status(job_id):
         'download_ready': job['download_ready'],
         'zip_filename': job.get('zip_filename'),
         'cancelled': job.get('cancelled', False),
-    })
+    }
 
 
-@app.route('/api/dcf/cancel/<job_id>', methods=['POST'])
-def dcf_cancel(job_id):
+@app.post('/api/dcf/cancel/{job_id}')
+def dcf_cancel(job_id: str):
     """Request cancellation of a running DCF analysis job."""
     job = jobs.get(job_id)
     if not job:
-        return jsonify({'error': 'Job not found'}), 404
+        raise HTTPException(status_code=404, detail='Job not found')
 
     job['cancelled'] = True
     # Mark job as cancelled immediately from API point of view.
@@ -822,7 +828,7 @@ def dcf_cancel(job_id):
         job['current_agent_name'] = 'Cancelled by user'
 
     logger.info('Cancellation requested for job %s', job_id[:8])
-    return jsonify({
+    return {
         'status': job['status'],
         'current_agent': job['current_agent'],
         'current_agent_name': job['current_agent_name'],
@@ -831,34 +837,35 @@ def dcf_cancel(job_id):
         'download_ready': job['download_ready'],
         'zip_filename': job.get('zip_filename'),
         'cancelled': True,
-    })
+    }
 
 
-@app.route('/api/dcf/download/<job_id>', methods=['GET'])
-def dcf_download(job_id):
+@app.get('/api/dcf/download/{job_id}')
+def dcf_download(job_id: str):
     """Download the ZIP file for a completed DCF analysis."""
     job = jobs.get(job_id)
     if not job:
-        return jsonify({'error': 'Job not found'}), 404
+        raise HTTPException(status_code=404, detail='Job not found')
 
     if not job.get('download_ready') or not job.get('zip_data'):
-        return jsonify({'error': 'Download is not ready yet'}), 404
+        raise HTTPException(status_code=404, detail='Download is not ready yet')
 
     zip_bytes = base64.b64decode(job['zip_data'])
     filename = job.get('zip_filename', 'dcf_valuation.zip')
 
-    return send_file(
+    return StreamingResponse(
         io.BytesIO(zip_bytes),
-        as_attachment=True,
-        download_name=filename,
-        mimetype='application/zip'
+        media_type='application/zip',
+        headers={'Content-Disposition': f'attachment; filename="{filename}"'},
     )
 
 
-@app.route('/api/health', methods=['GET'])
+@app.get('/api/health')
 def health():
-    return jsonify({'status': 'UP'})
+    return {'status': 'UP'}
 
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000, debug=False)
+    import uvicorn
+
+    uvicorn.run(app, host='0.0.0.0', port=5000)

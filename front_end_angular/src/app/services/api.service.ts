@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable, of, tap } from 'rxjs';
+// import { delay, filter, map, catchError, retry } from 'rxjs/operators';
 import { environment } from '../../environments/environment';
 import { Role, RoleDto } from '../models/role.model';
 import { Permission } from '../models/permission.model';
@@ -39,6 +40,14 @@ export class ApiService {
     const obs = this.http.get<PageResponse<Permission>>(this.javaApi + 'permissions', {
       params: params ? this.buildParams(params) : undefined
     });
+    // RxJS operators (commented – uncomment to use):
+    // .pipe(
+    //   delay(500),                           // artificial delay (ms)
+    //   tap(res => console.log(res)),         // side-effect: log response
+    //   filter(res => res.content.length >= 0), // filter responses
+    //   retry(2),                             // retry failed request 2x
+    //   catchError(err => { console.error(err); throw err; })  // error handling
+    // )
     return obs;
   }
   getPermissionsAll(): Observable<Permission[]> {
