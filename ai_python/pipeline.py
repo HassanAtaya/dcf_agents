@@ -23,6 +23,11 @@ def run_dcf_pipeline(job_id: str, company_name: str, api_key: str, prompts: Dict
         client = OpenAI(api_key=api_key)
         logger.info('[Job %s] === DCF PIPELINE STARTED for "%s" ===', job_id[:8], company_name)
 
+        prompt_agent1 = prompts.get('agent1', 'You are a corporate intelligence verification agent.')
+        prompt_agent2 = prompts.get('agent2', 'You are a senior financial analyst.')
+        prompt_agent3 = prompts.get('agent3', 'You are a valuation modeling expert.')
+        prompt_agent4 = prompts.get('agent4', 'You are a financial realism audit agent.')
+
         if check_cancelled(job_id):
             return
 
@@ -34,26 +39,13 @@ def run_dcf_pipeline(job_id: str, company_name: str, api_key: str, prompts: Dict
         agent1 = Agent(
             role='Company Existence Validator',
             goal=f'Verify if the company "{company_name}" exists and gather basic corporate info',
-            backstory=prompts.get('agent1', 'You are a corporate intelligence verification agent.'),
+            backstory=prompt_agent1,
             verbose=False,
             llm='gpt-4.1-mini',
         )
         task1 = Task(
-            description=(
-                f'Verify the existence and identity of the company: {company_name}. '
-                f'Return structured information: Company Status [Exists / Does Not Exist / Uncertain], '
-                f'exact legal name, ticker (if public), country, industry, official website, '
-                f'and a 2-3 line factual description.\n\n'
-                f'IMPORTANT RULES:\n'
-                f'- For descriptive or marketing-style names (e.g., with slogans or long taglines), '
-                f'assume the company may be real and search broadly (official website, business registries, '
-                f'LinkedIn, credible directories, press releases).\n'
-                f'- Use \"Does Not Exist\" ONLY when repeated, multi-source searching strongly indicates the entity '
-                f'is fictional, a placeholder, or appears only in examples/training material.\n'
-                f'- When evidence is sparse, ambiguous, or conflicting, prefer \"Uncertain\" and explain why.\n'
-                f'- It is better to return \"Uncertain\" for a potentially real small/private company than to '
-                f'incorrectly say \"Does Not Exist\".'
-            ),
+            # For Agent 1, the task description is the same as its backstory prompt.
+            description=prompt_agent1,
             agent=agent1,
             expected_output=(
                 'Structured company verification report with status, legal name, '
@@ -115,21 +107,15 @@ def run_dcf_pipeline(job_id: str, company_name: str, api_key: str, prompts: Dict
         agent2 = Agent(
             role='Financial Data Collector',
             goal=f'Collect all required DCF input data for {company_name}',
-            backstory=prompts.get('agent2', 'You are a senior financial analyst.'),
+            backstory=prompt_agent2,
             verbose=False,
             llm='gpt-4.1-mini',
         )
         task2 = Task(
             description=(
-                f'Using the verified company identity of {company_name}, collect all 5 critical '
-                f'DCF input categories: '
-                f'(1) 5+ years historical financials (revenue, EBITDA, EBIT, net income, FCF, growth, margins), '
-                f'(2) balance sheet data (debt, cash, net debt, working capital, shares), '
-                f'(3) reinvestment data (capex, D&A, WC trends), '
-                f'(4) discount rate components (risk-free rate, beta, ERP, cost of debt, capital structure, WACC), '
-                f'(5) terminal assumptions (GDP reference, industry growth, exit multiples). '
-                f'Separate actual vs estimated data, list missing data and provide a data quality score.\n\n'
-                f'Company verification info:\n{result1_str[:3000]}'
+                f'{prompt_agent2}\n\n'
+                'Read carefully the full result of Agent 1 provided below and then perform your task.\n\n'
+                f'Agent 1 result:\n{result1_str[:3000]}'
             ),
             agent=agent2,
             expected_output=(
@@ -157,25 +143,15 @@ def run_dcf_pipeline(job_id: str, company_name: str, api_key: str, prompts: Dict
         agent3 = Agent(
             role='Valuation Modeling Expert',
             goal=f'Build a complete 10-year DCF model for {company_name}',
-            backstory=prompts.get('agent3', 'You are a valuation modeling expert.'),
+            backstory=prompt_agent3,
             verbose=False,
             llm='gpt-4.1-mini',
         )
         task3 = Task(
             description=(
-                f'Using the collected financial inputs for {company_name}, build a complete '
-                f'10-year DCF model (2026-2035). Follow strict rules: '
-                f'(1) revenue forecast via historical CAGR with base/conservative/optimistic scenarios, '
-                f'(2) margin forecast via trend logic, '
-                f'(3) FCFF = EBIT*(1-Tax)+D&A-Capex-delta_NWC, '
-                f'(4) discount each year using WACC, '
-                f'(5) compute terminal value using both perpetual growth and exit multiple, '
-                f'(6) bridge EV to equity via net debt, '
-                f'(7) compute intrinsic value per share. '
-                f'Output structured text tables for forecast, FCF, PV, terminal value, EV, '
-                f'equity value, per-share value plus sensitivity analysis (WACC +/-1%, g +/-0.5%) '
-                f'and clearly labeled final scenario results.\n\n'
-                f'Financial input data:\n{result2_str[:4000]}'
+                f'{prompt_agent3}\n\n'
+                'Read carefully the full result of Agent 2 provided below and then perform your task.\n\n'
+                f'Agent 2 result:\n{result2_str[:4000]}'
             ),
             agent=agent3,
             expected_output=(
@@ -203,24 +179,17 @@ def run_dcf_pipeline(job_id: str, company_name: str, api_key: str, prompts: Dict
         agent4 = Agent(
             role='Financial Realism Auditor',
             goal=f'Audit and validate the DCF analysis for {company_name}',
-            backstory=prompts.get('agent4', 'You are a financial realism audit agent.'),
+            backstory=prompt_agent4,
             verbose=False,
             llm='gpt-4.1-mini',
         )
         task4 = Task(
             description=(
-                f'Audit the DCF analysis for {company_name}. '
-                f'Check growth realism vs GDP, margin consistency vs industry, reinvestment logic, '
-                f'WACC/beta sanity, and terminal value dominance (<75% EV). '
-                f'Independently recalculate key metrics, correct unrealistic assumptions if needed. '
-                f'Return strictly structured machine-readable text formatted as: '
-                f'Sheet 1 Company Summary, Sheet 2 Input Data, Sheet 3 Forecast Model, '
-                f'Sheet 4 Valuation Summary (EV, Equity Value, Intrinsic Value/Share), '
-                f'Sheet 5 Validation Notes (corrections, adjustments, risk flags), '
-                f'with final status [Validated/Adjusted & Validated/Rejected].\n\n'
-                f'Company verification:\n{result1_str[:1500]}\n\n'
-                f'Financial data:\n{result2_str[:2500]}\n\n'
-                f'DCF model:\n{result3_str[:4000]}'
+                f'{prompt_agent4}\n\n'
+                'Read carefully the full results of the previous agents provided below and then perform your task.\n\n'
+                f'Agent 1 (Company verification):\n{result1_str[:1500]}\n\n'
+                f'Agent 2 (Financial data):\n{result2_str[:2500]}\n\n'
+                f'Agent 3 (DCF model):\n{result3_str[:4000]}'
             ),
             agent=agent4,
             expected_output=(
