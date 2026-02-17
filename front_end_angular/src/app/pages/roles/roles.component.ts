@@ -14,6 +14,7 @@ import { AuthService } from '../../services/auth.service';
 import { TranslateService } from '../../services/translate.service';
 import { Role } from '../../models/role.model';
 import { Permission } from '../../models/permission.model';
+import { UserStateService } from '../../services/user-state.service';
 
 @Component({
   selector: 'app-roles',
@@ -49,7 +50,8 @@ export class RolesComponent implements OnInit, OnDestroy, AfterViewInit {
     public auth: AuthService,
     private confirmService: ConfirmationService,
     private messageService: MessageService,
-    public ts: TranslateService
+    public ts: TranslateService,
+    public userState: UserStateService
   ) {}
 
   onDialogShow(): void {

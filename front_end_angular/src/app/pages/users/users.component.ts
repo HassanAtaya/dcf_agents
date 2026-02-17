@@ -14,6 +14,7 @@ import { TranslateService } from '../../services/translate.service';
 import { AppUser, UserDto } from '../../models/user.model';
 import { Role } from '../../models/role.model';
 import { Subject, debounceTime, distinctUntilChanged } from 'rxjs';
+import { UserStateService } from '../../services/user-state.service';
 
 const PAGE_SIZE = 15;
 
@@ -60,7 +61,8 @@ export class UsersComponent implements OnInit, AfterViewInit, OnDestroy {
     public auth: AuthService,
     private confirmService: ConfirmationService,
     private messageService: MessageService,
-    public ts: TranslateService
+    public ts: TranslateService,
+    private userState: UserStateService
   ) {}
 
   onDialogShow(): void {
@@ -179,12 +181,17 @@ export class UsersComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   save(): void {
-    const obs = this.editMode && this.selectedUser
-      ? this.api.updateUser(this.selectedUser.id!, this.form)
+    const isEdit = this.editMode && this.selectedUser;
+    const obs = isEdit
+      ? this.api.updateUser(this.selectedUser!.id!, this.form)
       : this.api.createUser(this.form);
 
     obs.subscribe({
-      next: () => {
+      next: (savedUser) => {
+        // Keep a copy of the last edited/created user in a shared signal
+        // so that other components (like Roles) can react to it.
+        this.userState.setLastEditedUser(savedUser as AppUser);
+
         this.showDialog = false;
         this.resetAndLoad();
         this.messageService.add({ severity: 'success', summary: this.ts.t('common.success'), detail: this.ts.t('users.saved') });

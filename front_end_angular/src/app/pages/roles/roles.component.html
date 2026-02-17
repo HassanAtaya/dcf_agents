@@ -1,8 +1,13 @@
 <div class="page-container">
   <div class="page-header">
     <h2><i class="pi pi-shield"></i> {{ ts.t('roles.title') }}</h2>
-    <button pButton [label]="ts.t('roles.add')" icon="pi pi-plus" (click)="openAdd()"
-            *ngIf="auth.hasPermission('add_role')"></button>
+    <div class="header-actions">
+      <button pButton [label]="ts.t('roles.add')" icon="pi pi-plus" (click)="openAdd()"
+              *ngIf="auth.hasPermission('add_role')"></button>
+      <span class="last-edited-label" *ngIf="userState.lastEditedUser()">
+        Last user edited: <strong>{{ userState.lastEditedUser()?.username }}</strong>
+      </span>
+    </div>
   </div>
 
   <div class="table-toolbar">
