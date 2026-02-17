@@ -8,7 +8,7 @@ ASSUMPTIONS
 - Project path: /home/ubuntu/dcf_agents
 - Backend: Spring Boot (Maven)
 - Frontend: Angular (served by nginx)
-- Database: PostgreSQL
+- Database: MySQL
 - One systemd service for backend only
 - Java logs must go to: /var/logs/dcf_logs
 
@@ -47,8 +47,8 @@ STEP 2 — INSTALL REQUIRED PACKAGES
     # Angular CLI
     sudo npm install -g @angular/cli
 
-    # PostgreSQL
-    sudo apt install -y postgresql postgresql-contrib
+    # MySQL
+    sudo apt install -y mysql-server
 
     # nginx
     sudo apt install -y nginx
@@ -99,9 +99,9 @@ Go to backend resources folder:
 
 Edit application.properties (or application-prod.properties):
 
-    spring.datasource.url=jdbc:postgresql://localhost:5432/dcf_db
-    spring.datasource.username=dcf_user
-    spring.datasource.password=StrongPasswordHere
+    spring.datasource.url=jdbc:mysql://localhost:3306/dcf_ai
+    spring.datasource.username=root
+    spring.datasource.password=root
     spring.jpa.hibernate.ddl-auto=none
     spring.jpa.show-sql=false
 
@@ -205,7 +205,7 @@ Paste (replace YOUR_JAR_NAME.jar):
 
     [Unit]
     Description=DCF Agents Spring Boot Application
-    After=network.target postgresql.service
+    After=network.target mysql.service
 
     [Service]
     User=dcfuser
@@ -235,9 +235,9 @@ Check service:
 STEP 9 — VERIFY SYSTEM
 ----------------------
 
-Check PostgreSQL:
+Check MySQL:
 
-    sudo systemctl status postgresql
+    sudo systemctl status mysql
 
 Test backend locally:
 
