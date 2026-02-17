@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, AfterViewInit, ViewChild, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { InputTextModule } from 'primeng/inputtext';
@@ -17,7 +17,8 @@ import { AiSettings } from '../../models/ai.model';
   templateUrl: './settings.component.html',
   styleUrl: './settings.component.scss'
 })
-export class SettingsComponent implements OnInit {
+export class SettingsComponent implements OnInit, AfterViewInit {
+  @ViewChild('apiKeyInput') apiKeyInput!: ElementRef<HTMLInputElement>;
   settings: AiSettings | null = null;
   apiKey = '';
   promptAgent1 = '';
@@ -37,6 +38,14 @@ export class SettingsComponent implements OnInit {
     this.loadSettings();
   }
 
+  ngAfterViewInit(): void {
+    setTimeout(() => this.focusApiKeyInput(), 150);
+  }
+
+  private focusApiKeyInput(): void {
+    this.apiKeyInput?.nativeElement?.focus();
+  }
+
   loadSettings(): void {
     this.api.getSettings().subscribe(data => {
       if (data && data.length > 0) {
@@ -47,6 +56,7 @@ export class SettingsComponent implements OnInit {
         this.promptAgent3 = this.settings.promptAgent3 || '';
         this.promptAgent4 = this.settings.promptAgent4 || '';
       }
+      setTimeout(() => this.focusApiKeyInput(), 100);
     });
   }
 

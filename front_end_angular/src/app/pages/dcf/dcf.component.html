@@ -6,7 +6,7 @@
     <div class="input-row">
       <div class="field company-field">
         <label>{{ ts.t('dcf.company_name') }}</label>
-        <input type="text" pInputText [(ngModel)]="companyName"
+        <input #companyInput type="text" pInputText [(ngModel)]="companyName"
                [placeholder]="ts.t('dcf.company_placeholder')"
                [disabled]="isRunning"
                (keyup.enter)="startDcf()" />

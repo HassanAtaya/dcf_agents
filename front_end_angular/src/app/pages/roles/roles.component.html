@@ -5,6 +5,17 @@
             *ngIf="auth.hasPermission('add_role')"></button>
   </div>
 
+  <div class="table-toolbar">
+    <span class="p-input-icon-left">
+      <!-- <i class="pi pi-search"></i> -->
+      <input #searchInput type="text"
+             pInputText
+             [(ngModel)]="searchTerm"
+             (ngModelChange)="onSearchChange()"
+             [placeholder]="ts.t('roles.search')" />
+    </span>
+  </div>
+
   <p-table [value]="roles()" [lazy]="true" [paginator]="true" [rows]="10" [rowsPerPageOptions]="[10, 20, 50, 100]"
           [totalRecords]="totalRecords()" [loading]="loading()" (onLazyLoad)="onLazyLoad($event)"
           [showCurrentPageReport]="true" styleClass="p-datatable-sm">

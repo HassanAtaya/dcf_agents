@@ -26,8 +26,11 @@ public class PermissionService {
         return permissionRepository.findAll();
     }
 
-    public Page<Permission> getAllPermissions(Pageable pageable) {
-        return permissionRepository.findAll(pageable);
+    public Page<Permission> getAllPermissions(Pageable pageable, String search) {
+        if (search == null || search.isBlank()) {
+            return permissionRepository.findAll(pageable);
+        }
+        return permissionRepository.findByNameContainingIgnoreCase(search, pageable);
     }
 
     public Permission getPermissionById(Long id) {

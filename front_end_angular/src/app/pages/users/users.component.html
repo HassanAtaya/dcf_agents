@@ -7,8 +7,8 @@
 
   <div class="table-toolbar">
     <span class="p-input-icon-left">
-      <i class="pi pi-search"></i>
-      <input type="text"
+      <!-- <i class="pi pi-search"></i> -->
+      <input #searchInput type="text"
              pInputText
              [(ngModel)]="searchTerm"
              (ngModelChange)="onSearchChange()"
@@ -18,7 +18,8 @@
   </div>
 
   <div #scrollContainer class="users-scroll-container">
-    <p-table [value]="allUsers()" styleClass="p-datatable-sm p-datatable-striped">
+    <p-table [value]="allUsers()" styleClass="p-datatable-sm p-datatable-striped"
+             [scrollable]="true" [scrollHeight]="'520px'">
       <ng-template pTemplate="header">
         <tr>
           <th>{{ ts.t('common.id') }}</th>

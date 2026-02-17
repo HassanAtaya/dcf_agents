@@ -18,8 +18,9 @@ public class PermissionController {
 
     @GetMapping
     public ResponseEntity<Page<Permission>> getAll(
-            @PageableDefault(size = 20, sort = "id") Pageable pageable) {
-        return ResponseEntity.ok(permissionService.getAllPermissions(pageable));
+            @PageableDefault(size = 20, sort = "id") Pageable pageable,
+            @RequestParam(name = "search", required = false) String search) {
+        return ResponseEntity.ok(permissionService.getAllPermissions(pageable, search));
     }
 
     @GetMapping("/all")

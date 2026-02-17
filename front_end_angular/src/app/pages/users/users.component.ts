@@ -29,6 +29,7 @@ const PAGE_SIZE = 15;
 })
 export class UsersComponent implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild('userUsernameInput') userUsernameInput!: ElementRef<HTMLInputElement>;
+  @ViewChild('searchInput') searchInput!: ElementRef<HTMLInputElement>;
   @ViewChild('scrollContainer') scrollContainer!: ElementRef<HTMLDivElement>;
 
   allUsers = signal<AppUser[]>([]);
@@ -77,6 +78,7 @@ export class UsersComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   ngAfterViewInit(): void {
+    setTimeout(() => this.searchInput?.nativeElement?.focus(), 100);
     setTimeout(() => this.attachScrollListener(), 200);
   }
 
@@ -92,21 +94,34 @@ export class UsersComponent implements OnInit, AfterViewInit, OnDestroy {
   private attachScrollListener(): void {
     const el = this.scrollContainer?.nativeElement;
     if (!el) return;
-    this.scrollListener = () => {
-      const threshold = 50;
-      const atBottom = el.scrollHeight - el.scrollTop - el.clientHeight < threshold;
-      if (atBottom && this.hasMore && !this.loadingMore()) {
-        this.loadPage(this.currentPage + 1);
-      }
+    const getScrollEl = (): Element | null =>
+      el.querySelector('.p-datatable-wrapper') ?? el;
+    const bind = (target: Element) => {
+      this.scrollListener = () => {
+        const threshold = 50;
+        const sh = target instanceof HTMLElement ? target.scrollHeight : 0;
+        const st = target instanceof HTMLElement ? target.scrollTop : 0;
+        const ch = target instanceof HTMLElement ? target.clientHeight : 0;
+        const atBottom = sh - st - ch < threshold;
+        if (atBottom && this.hasMore && !this.loadingMore()) {
+          this.loadPage(this.currentPage + 1);
+        }
+      };
+      target.addEventListener('scroll', this.scrollListener, { passive: true });
     };
-    el.addEventListener('scroll', this.scrollListener, { passive: true });
+    const scrollEl = getScrollEl();
+    if (scrollEl) bind(scrollEl);
+    else setTimeout(() => {
+      const s = getScrollEl();
+      if (s) bind(s);
+    }, 300);
   }
 
   private detachScrollListener(): void {
     const el = this.scrollContainer?.nativeElement;
-    if (el && this.scrollListener) {
-      el.removeEventListener('scroll', this.scrollListener);
-    }
+    if (!el || !this.scrollListener) return;
+    const scrollEl = el.querySelector('.p-datatable-wrapper') ?? el;
+    scrollEl.removeEventListener('scroll', this.scrollListener);
   }
 
   private loadPage(page: number): void {

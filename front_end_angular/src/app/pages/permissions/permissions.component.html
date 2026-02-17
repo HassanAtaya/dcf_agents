@@ -1,8 +1,18 @@
 <div class="page-container">
   <div class="page-header">
     <h2><i class="pi pi-lock"></i> {{ ts.t('permissions.title') }}</h2>
-    <button pButton [label]="ts.t('permissions.add')" icon="pi pi-plus" (click)="openAdd()"
-            *ngIf="auth.hasPermission('add_permission')"></button>
+    <!-- <button pButton [label]="ts.t('permissions.add')" icon="pi pi-plus" (click)="openAdd()" *ngIf="auth.hasPermission('add_permission')"></button> -->
+  </div>
+
+  <div class="table-toolbar">
+    <span class="p-input-icon-left">
+      <!-- <i class="pi pi-search"></i> -->
+      <input #searchInput type="text"
+             pInputText
+             [(ngModel)]="searchTerm"
+             (ngModelChange)="onSearchChange()"
+             [placeholder]="ts.t('permissions.search')" />
+    </span>
   </div>
 
   <p-table [value]="permissions()" [lazy]="true" [paginator]="true" [rows]="10" [rowsPerPageOptions]="[10, 20, 50, 100]"

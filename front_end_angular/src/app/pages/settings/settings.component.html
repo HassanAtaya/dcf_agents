@@ -5,7 +5,7 @@
     <div class="settings-section">
       <div class="field">
         <label>{{ ts.t('settings.api_key') }}</label>
-        <input type="password" pInputText [(ngModel)]="apiKey" [placeholder]="ts.t('settings.enter_key')" />
+        <input #apiKeyInput type="password" pInputText [(ngModel)]="apiKey" [placeholder]="ts.t('settings.enter_key')" />
       </div>
     </div>
 

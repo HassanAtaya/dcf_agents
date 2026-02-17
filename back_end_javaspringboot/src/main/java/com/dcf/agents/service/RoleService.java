@@ -34,8 +34,11 @@ public class RoleService {
         return roleRepository.findAll();
     }
 
-    public Page<Role> getAllRoles(Pageable pageable) {
-        return roleRepository.findAll(pageable);
+    public Page<Role> getAllRoles(Pageable pageable, String search) {
+        if (search == null || search.isBlank()) {
+            return roleRepository.findAll(pageable);
+        }
+        return roleRepository.findByNameContainingIgnoreCase(search, pageable);
     }
 
     public Role getRoleById(Long id) {

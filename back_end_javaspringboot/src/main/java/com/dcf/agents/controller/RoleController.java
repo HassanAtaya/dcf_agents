@@ -19,8 +19,9 @@ public class RoleController {
 
     @GetMapping
     public ResponseEntity<Page<Role>> getAll(
-            @PageableDefault(size = 20, sort = "id") Pageable pageable) {
-        return ResponseEntity.ok(roleService.getAllRoles(pageable));
+            @PageableDefault(size = 20, sort = "id") Pageable pageable,
+            @RequestParam(name = "search", required = false) String search) {
+        return ResponseEntity.ok(roleService.getAllRoles(pageable, search));
     }
 
     @GetMapping("/all")

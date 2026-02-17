@@ -1,4 +1,4 @@
-import { Component, OnDestroy } from '@angular/core';
+import { Component, OnDestroy, AfterViewInit, ViewChild, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { InputTextModule } from 'primeng/inputtext';
@@ -16,7 +16,8 @@ import { DcfStatusResponse, AgentResult } from '../../models/ai.model';
   templateUrl: './dcf.component.html',
   styleUrl: './dcf.component.scss'
 })
-export class DcfComponent implements OnDestroy {
+export class DcfComponent implements OnDestroy, AfterViewInit {
+  @ViewChild('companyInput') companyInput!: ElementRef<HTMLInputElement>;
   companyName = '';
   jobId: string | null = null;
   status: DcfStatusResponse | null = null;
@@ -37,6 +38,10 @@ export class DcfComponent implements OnDestroy {
     private messageService: MessageService,
     public ts: TranslateService
   ) {}
+
+  ngAfterViewInit(): void {
+    setTimeout(() => this.companyInput?.nativeElement?.focus(), 100);
+  }
 
   ngOnDestroy(): void {
     this.stopPolling();

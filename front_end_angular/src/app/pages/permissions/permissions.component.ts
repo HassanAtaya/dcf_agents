@@ -1,7 +1,8 @@
-import { Component, OnInit, ViewChild, ElementRef, signal } from '@angular/core';
+import { Component, OnInit, OnDestroy, AfterViewInit, ViewChild, ElementRef, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TableModule, TableLazyLoadEvent } from 'primeng/table';
+import { Subject, debounceTime, distinctUntilChanged } from 'rxjs';
 import { ButtonModule } from 'primeng/button';
 import { DialogModule } from 'primeng/dialog';
 import { InputTextModule } from 'primeng/inputtext';
@@ -19,8 +20,9 @@ import { Permission } from '../../models/permission.model';
   templateUrl: './permissions.component.html',
   styleUrl: './permissions.component.scss'
 })
-export class PermissionsComponent implements OnInit {
+export class PermissionsComponent implements OnInit, OnDestroy, AfterViewInit {
   @ViewChild('permNameInput') permNameInput!: ElementRef<HTMLInputElement>;
+  @ViewChild('searchInput') searchInput!: ElementRef<HTMLInputElement>;
 
   private contentSignal = signal<Permission[]>([]);
   private totalRecordsSignal = signal(0);
@@ -34,6 +36,9 @@ export class PermissionsComponent implements OnInit {
   editMode = false;
   selectedPerm: Permission | null = null;
   permName = '';
+  searchTerm = '';
+  private searchSubject = new Subject<string>();
+  private tableRef: { first: number; rows: number; sortField?: string; sortOrder?: number } = { first: 0, rows: 20 };
 
   constructor(
     private api: ApiService,
@@ -47,18 +52,40 @@ export class PermissionsComponent implements OnInit {
     setTimeout(() => this.permNameInput?.nativeElement?.focus(), 100);
   }
 
+  ngAfterViewInit(): void {
+    setTimeout(() => this.searchInput?.nativeElement?.focus(), 100);
+  }
+
   ngOnInit(): void {
-    // Initial load is done by table's first lazy load
+    this.searchSubject.pipe(
+      debounceTime(300),
+      distinctUntilChanged()
+    ).subscribe(() => this.reloadTable());
+  }
+
+  ngOnDestroy(): void {
+    this.searchSubject.complete();
+  }
+
+  onSearchChange(): void {
+    this.searchSubject.next(this.searchTerm);
+  }
+
+  private reloadTable(): void {
+    const evt = { first: 0, rows: this.tableRef.rows ?? 20, sortField: this.tableRef.sortField, sortOrder: this.tableRef.sortOrder ?? 1 };
+    this.tableRef = { ...evt };
+    this.onLazyLoad(evt);
   }
 
   onLazyLoad(event: TableLazyLoadEvent): void {
+    this.tableRef = { first: event.first ?? 0, rows: event.rows ?? 20, sortField: typeof event.sortField === 'string' ? event.sortField : undefined, sortOrder: event.sortOrder ?? 1 };
     this.loadingSignal.set(true);
     const page = event.first ?? 0;
     const size = event.rows ?? 20;
     const sort = event.sortField
       ? `${event.sortField},${event.sortOrder === 1 ? 'asc' : 'desc'}`
       : undefined;
-    this.api.getPermissions({ page: Math.floor(page / size), size, sort }).subscribe({
+    this.api.getPermissions({ page: Math.floor(page / size), size, sort, search: this.searchTerm || undefined }).subscribe({
       next: (p) => {
         this.contentSignal.set(p.content);
         this.totalRecordsSignal.set(p.totalElements);
@@ -91,7 +118,7 @@ export class PermissionsComponent implements OnInit {
     obs.subscribe({
       next: () => {
         this.showDialog = false;
-        this.onLazyLoad({ first: 0, rows: 20 });
+        this.reloadTable();
         this.messageService.add({ severity: 'success', summary: this.ts.t('common.success'), detail: this.ts.t('permissions.saved') });
       }
     });
@@ -105,7 +132,7 @@ export class PermissionsComponent implements OnInit {
       accept: () => {
         this.api.deletePermission(perm.id).subscribe({
           next: () => {
-            this.onLazyLoad({ first: 0, rows: 20 });
+            this.reloadTable();
             this.messageService.add({ severity: 'success', summary: this.ts.t('common.success'), detail: this.ts.t('permissions.deleted') });
           }
         });
