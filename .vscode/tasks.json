@@ -32,9 +32,9 @@
     {
       "label": "dcf: Python AI",
       "type": "shell",
-      "command": "python main.py",
+      "command": "python -m ai_python.main",
       "options": {
-        "cwd": "${workspaceFolder}/ai_python"
+        "cwd": "${workspaceFolder}"
       },
       "isBackground": true,
       "problemMatcher": [],

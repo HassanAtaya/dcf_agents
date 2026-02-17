@@ -1,0 +1,94 @@
+package com.dcf.agents.controller;
+
+import com.dcf.agents.dto.AuthDtos;
+import com.dcf.agents.entity.AppUser;
+import com.dcf.agents.entity.Permission;
+import com.dcf.agents.entity.Role;
+import com.dcf.agents.repository.AppUserRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
+
+import java.util.Base64;
+import java.util.Map;
+
+@RestController
+@RequestMapping("/api/auth")
+public class AuthController {
+
+    @Autowired
+    private AuthenticationManager authManager;
+
+    @Autowired
+    private AppUserRepository userRepo;
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+
+    @PostMapping("/login")
+    public ResponseEntity<?> login(@RequestBody AuthDtos.LoginRequest req) {
+        authManager.authenticate(
+            new UsernamePasswordAuthenticationToken(req.username, req.password)
+        );
+
+        AppUser user = userRepo.findByUsername(req.username)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
+
+        String basicToken = Base64.getEncoder().encodeToString(
+            (req.username + ":" + req.password).getBytes()
+        );
+
+        return ResponseEntity.ok(buildLoginResponse(user, basicToken));
+    }
+
+    @GetMapping("/me")
+    public ResponseEntity<?> me(Authentication auth) {
+        AppUser user = userRepo.findByUsername(auth.getName())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
+        return ResponseEntity.ok(buildLoginResponse(user, null));
+    }
+
+    @PutMapping("/profile")
+    public ResponseEntity<?> updateProfile(Authentication auth, @RequestBody AuthDtos.ProfileUpdateRequest req) {
+        AppUser user = userRepo.findByUsername(auth.getName())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
+
+        if (req.firstname != null) user.setFirstname(req.firstname);
+        if (req.lastname != null) user.setLastname(req.lastname);
+        if (req.language != null) user.setLanguage(req.language);
+        if (req.password != null && !req.password.isBlank()) {
+            user.setPassword(passwordEncoder.encode(req.password));
+        }
+        userRepo.save(user);
+
+        return ResponseEntity.ok(buildLoginResponse(user, null));
+    }
+
+    @GetMapping("/health")
+    public ResponseEntity<?> health() {
+        return ResponseEntity.ok(Map.of("status", "UP"));
+    }
+
+    private AuthDtos.LoginResponse buildLoginResponse(AppUser user, String basicToken) {
+        AuthDtos.LoginResponse resp = new AuthDtos.LoginResponse();
+        resp.id = user.getId();
+        resp.username = user.getUsername();
+        resp.firstname = user.getFirstname();
+        resp.lastname = user.getLastname();
+        resp.language = user.getLanguage();
+        resp.basicToken = basicToken;
+        resp.roles = user.getRoles().stream().map(Role::getName).toList();
+        resp.permissions = user.getRoles().stream()
+                .flatMap(r -> r.getPermissions().stream())
+                .map(Permission::getName)
+                .distinct()
+                .toList();
+        return resp;
+    }
+}
