@@ -13,8 +13,31 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
+    margin-bottom: 0.5rem;
+    h2 {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      color: var(--color-primary);
+    }
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+  }
+
+  .last-edited-container {
     margin-bottom: 1rem;
-    h2 { display: flex; align-items: center; gap: 0.5rem; color: var(--color-primary); }
+    .last-edited-label {
+      font-size: 0.9rem;
+      color: #2d3748;
+    }
+    .last-edited-username {
+      margin-left: 0.25rem;
+      color: #e53e3e; // red-600
+      font-weight: 700;
+    }
   }
 }
 .action-buttons { display: flex; gap: 0.25rem; }
@@ -37,4 +60,14 @@
     label { font-weight: 600; font-size: 0.85rem; }
     input { width: 100%; }
   }
+}
+
+// Make permissions multi-select panel more comfortable to read
+:host ::ng-deep .p-multiselect {
+  width: 100%;
+}
+
+:host ::ng-deep .p-multiselect-panel {
+  max-height: 350px;
+  min-width: 420px;
 }

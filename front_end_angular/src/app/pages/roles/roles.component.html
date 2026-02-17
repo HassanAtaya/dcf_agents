@@ -4,10 +4,14 @@
     <div class="header-actions">
       <button pButton [label]="ts.t('roles.add')" icon="pi pi-plus" (click)="openAdd()"
               *ngIf="auth.hasPermission('add_role')"></button>
-      <span class="last-edited-label" *ngIf="userState.lastEditedUser()">
-        Last user edited: <strong>{{ userState.lastEditedUser()?.username }}</strong>
-      </span>
     </div>
+  </div>
+
+  <div class="last-edited-container" *ngIf="userState.lastEditedUser()">
+    <span class="last-edited-label">
+      Last user edited:
+      <strong class="last-edited-username">{{ userState.lastEditedUser()?.username }}</strong>
+    </span>
   </div>
 
   <div class="table-toolbar">
@@ -59,7 +63,10 @@
 </div>
 
 <p-dialog [header]="editMode ? ts.t('roles.edit') : ts.t('roles.add')" [(visible)]="showDialog"
-          [modal]="true" [style]="{ width: '500px' }" (onShow)="onDialogShow()">
+          [modal]="true"
+          [style]="{ width: '800px', maxWidth: '95vw' }"
+          [contentStyle]="{ 'max-height': '80vh', overflow: 'visible' }"
+          (onShow)="onDialogShow()">
   <div class="dialog-form">
     <div class="field">
       <label>{{ ts.t('roles.name') }}</label>
@@ -67,9 +74,15 @@
     </div>
     <div class="field">
       <label>{{ ts.t('roles.permissions') }}</label>
-      <p-multiSelect [options]="permissions" [(ngModel)]="selectedPermissionIds"
-                     optionLabel="name" optionValue="id" [placeholder]="ts.t('common.select')"
-                     [style]="{ width: '100%' }"></p-multiSelect>
+      <p-multiSelect
+        [options]="permissions"
+        [(ngModel)]="selectedPermissionIds"
+        optionLabel="name"
+        optionValue="id"
+        [placeholder]="ts.t('common.select')"
+        [style]="{ width: '100%' }"
+        [appendTo]="'body'">
+      </p-multiSelect>
     </div>
   </div>
   <ng-template pTemplate="footer">
