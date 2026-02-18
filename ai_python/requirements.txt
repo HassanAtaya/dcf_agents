@@ -1,5 +1,5 @@
-flask==3.0.0
-flask-cors==4.0.0
+fastapi>=0.115.0
+uvicorn>=0.34.0
 openai>=1.68.0
 crewai>=0.100.1
 crewai-tools>=0.36.0
